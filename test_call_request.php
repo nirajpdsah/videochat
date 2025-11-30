@@ -76,9 +76,15 @@ $current_user = getCurrentUser();
     $stmt->close();
     ?>
     
-    <h2>Test 3: Manual API Test</h2>
-    <button onclick="testAPI()">Test API Endpoint</button>
+    <h2>Test 3: Check API Endpoint</h2>
+    <button onclick="testSimpleEndpoint()">Test Simple Endpoint</button>
+    <button onclick="testAPI()">Test Call Request API</button>
     <div id="apiResult"></div>
+    
+    <h2>Test 3.5: Direct API Test</h2>
+    <p>Try calling the API directly:</p>
+    <a href="api/send_call_request.php" target="_blank">Open API (should show JSON error)</a><br>
+    <a href="api/test_endpoint.php" target="_blank">Test Simple Endpoint (should work)</a>
     
     <h2>Test 4: Check Recent Signals</h2>
     <?php
@@ -117,6 +123,27 @@ $current_user = getCurrentUser();
     <p><a href="dashboard.php">← Back to Dashboard</a></p>
     
     <script>
+        async function testSimpleEndpoint() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<div class="info">Testing simple endpoint...</div>';
+            
+            try {
+                const response = await fetch('api/test_endpoint.php');
+                const text = await response.text();
+                console.log('Simple endpoint response:', text);
+                
+                try {
+                    const data = JSON.parse(text);
+                    resultDiv.innerHTML = '<div class="success">✅ Simple endpoint works!<br><pre>' + 
+                        JSON.stringify(data, null, 2) + '</pre></div>';
+                } catch (e) {
+                    resultDiv.innerHTML = '<div class="error">❌ Not JSON: ' + text.substring(0, 200) + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
+            }
+        }
+        
         async function testCallRequest(userId, username) {
             const resultDiv = document.getElementById('apiResult');
             resultDiv.innerHTML = '<div class="info">Testing call request to ' + username + '...</div>';
@@ -157,10 +184,20 @@ $current_user = getCurrentUser();
                     })
                 });
                 
-                const data = await response.json();
-                resultDiv.innerHTML = '<div class="info"><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+                // Get response text first to see what we're getting
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    resultDiv.innerHTML = '<div class="info"><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+                } catch (parseError) {
+                    // If it's not JSON, show the raw response
+                    resultDiv.innerHTML = '<div class="error">❌ Response is not JSON. Raw response:<br><pre>' + 
+                        responseText.substring(0, 500) + '</pre></div>';
+                }
             } catch (error) {
-                resultDiv.innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
+                resultDiv.innerHTML = '<div class="error">❌ Network Error: ' + error.message + '</div>';
             }
         }
     </script>

@@ -3,8 +3,14 @@
  * API Endpoint: Send call request notification
  * Notifies a user that someone wants to call them
  */
+
+// Prevent any output before JSON
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors, we'll handle them
+
 require_once '../config.php';
 
+// Set JSON header immediately
 header('Content-Type: application/json');
 
 if (!isLoggedIn()) {
@@ -55,19 +61,22 @@ $stmt = $conn->prepare("
 $stmt->bind_param("iiss", $from_user_id, $to_user_id, $signal_data, $call_type);
 
 if ($stmt->execute()) {
+    $stmt->close();
     echo json_encode([
         'success' => true,
         'message' => 'Call request sent'
     ]);
+    exit();
 } else {
     // Get the actual error message
     $error = $stmt->error ?: $conn->error;
+    $stmt->close();
     error_log("Call request error: " . $error);
     echo json_encode([
         'success' => false, 
         'message' => 'Failed to send call request: ' . $error
     ]);
+    exit();
 }
-$stmt->close();
 ?>
 
