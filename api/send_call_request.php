@@ -4,9 +4,38 @@
  * Notifies a user that someone wants to call them
  */
 
-// Prevent any output before JSON
-error_reporting(E_ALL);
-ini_set('display_errors', 0); // Don't display errors, we'll handle them
+// Set error handler to catch all errors
+function handleError($errno, $errstr, $errfile, $errline) {
+    header('Content-Type: application/json');
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'PHP Error',
+        'error' => $errstr,
+        'file' => basename($errfile),
+        'line' => $errline
+    ]);
+    exit();
+}
+
+function handleFatalError() {
+    $error = error_get_last();
+    if ($error !== NULL && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        header('Content-Type: application/json');
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Fatal Error',
+            'error' => $error['message'],
+            'file' => basename($error['file']),
+            'line' => $error['line']
+        ]);
+        exit();
+    }
+}
+
+register_shutdown_function('handleFatalError');
+set_error_handler('handleError', E_ALL);
 
 // Set JSON header immediately - before any includes
 header('Content-Type: application/json');
@@ -20,12 +49,22 @@ try {
     ob_end_clean();
     echo json_encode(['success' => false, 'message' => 'Config error: ' . $e->getMessage()]);
     exit();
+} catch (Error $e) {
+    ob_end_clean();
+    echo json_encode(['success' => false, 'message' => 'Config error: ' . $e->getMessage()]);
+    exit();
 }
 
 // Check if logged in
+if (!function_exists('isLoggedIn')) {
+    ob_end_clean();
+    echo json_encode(['success' => false, 'message' => 'isLoggedIn function not found']);
+    exit();
+}
+
 if (!isLoggedIn()) {
     ob_end_clean();
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized', 'session_id' => session_id()]);
     exit();
 }
 
@@ -44,6 +83,13 @@ if (json_last_error() !== JSON_ERROR_NONE && !empty($raw_input)) {
     exit();
 }
 
+// Check if session has user_id
+if (!isset($_SESSION['user_id'])) {
+    ob_end_clean();
+    echo json_encode(['success' => false, 'message' => 'Session user_id not set']);
+    exit();
+}
+
 $from_user_id = $_SESSION['user_id'];
 $to_user_id = isset($input['to_user_id']) ? intval($input['to_user_id']) : 0;
 $call_type = isset($input['call_type']) ? $input['call_type'] : 'video';
@@ -55,10 +101,40 @@ if ($to_user_id == 0) {
     exit();
 }
 
+// Check database connection
+if (!isset($conn) || $conn->connect_error) {
+    ob_end_clean();
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Database connection error',
+        'error' => isset($conn) ? $conn->connect_error : 'Connection not set'
+    ]);
+    exit();
+}
+
 // Check if target user is online
 $check_stmt = $conn->prepare("SELECT id, status FROM users WHERE id = ?");
+if (!$check_stmt) {
+    ob_end_clean();
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Failed to prepare statement',
+        'error' => $conn->error
+    ]);
+    exit();
+}
+
 $check_stmt->bind_param("i", $to_user_id);
-$check_stmt->execute();
+if (!$check_stmt->execute()) {
+    ob_end_clean();
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Failed to execute query',
+        'error' => $check_stmt->error
+    ]);
+    $check_stmt->close();
+    exit();
+}
 $result = $check_stmt->get_result();
 
 if ($result->num_rows === 0) {
@@ -84,6 +160,17 @@ $stmt = $conn->prepare("
     INSERT INTO signals (from_user_id, to_user_id, signal_type, signal_data, call_type) 
     VALUES (?, ?, 'call-request', ?, ?)
 ");
+
+if (!$stmt) {
+    ob_end_clean();
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Failed to prepare INSERT statement',
+        'error' => $conn->error
+    ]);
+    exit();
+}
+
 $stmt->bind_param("iiss", $from_user_id, $to_user_id, $signal_data, $call_type);
 
 // Clear any output buffer
