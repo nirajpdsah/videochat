@@ -17,10 +17,64 @@
 3. Railway will automatically create the database
 
 ### Step 4: Run Database Setup
-1. Go to your MySQL service in Railway
-2. Click on "Connect" tab
-3. Copy the connection details
-4. Use Railway's MySQL console or a MySQL client to run `database.sql`
+
+After MySQL is added, you need to create the database tables. Here are **3 easy methods**:
+
+#### **Method 1: Using Railway's Built-in MySQL Console (Easiest - Recommended)**
+
+1. **Open MySQL Service:**
+   - In your Railway project dashboard, click on the **MySQL** service (it should be listed alongside your Web Service)
+
+2. **Open MySQL Console:**
+   - Click on the **"Data"** tab (or **"Query"** tab, depending on Railway version)
+   - Look for a button that says **"Open MySQL Console"**, **"Query"**, or **"Run Query"**
+   - Click it to open the MySQL query editor
+
+3. **Run the SQL Script:**
+   - Open the `database.sql` file from your project (on your computer)
+   - **Copy ALL the contents** of `database.sql` (Ctrl+A, then Ctrl+C)
+   - **Paste it** into the Railway MySQL console/query editor
+   - Click **"Run"** or **"Execute"** button
+   - Wait for success message - you should see "Query OK" or similar
+
+4. **Verify Tables Created:**
+   - In the same console, run: `SHOW TABLES;`
+   - You should see: `users`, `signals`, and `messages` tables
+
+#### **Method 2: Using Railway's Query Tab**
+
+1. Click on your **MySQL** service in Railway
+2. Go to **"Query"** tab (or **"Data"** → **"Query"**)
+3. You'll see a text area where you can type SQL
+4. Copy and paste the entire `database.sql` content
+5. Click **"Run Query"** or press **Ctrl+Enter**
+6. Done! ✅
+
+#### **Method 3: Using External MySQL Client (Advanced)**
+
+If you prefer using a MySQL client like MySQL Workbench, phpMyAdmin, or command line:
+
+1. **Get Connection Details:**
+   - Click on your **MySQL** service in Railway
+   - Go to **"Connect"** tab (or **"Variables"** tab)
+   - You'll see connection details like:
+     - **Host:** (something like `containers-us-west-xxx.railway.app`)
+     - **Port:** (usually `3306`)
+     - **Database:** (your database name)
+     - **User:** (your MySQL username)
+     - **Password:** (click to reveal)
+
+2. **Connect with MySQL Client:**
+   - Open your MySQL client (MySQL Workbench, phpMyAdmin, or command line)
+   - Enter the connection details from Railway
+   - Connect to the database
+
+3. **Run the SQL File:**
+   - In MySQL Workbench: File → Open SQL Script → Select `database.sql` → Execute
+   - In phpMyAdmin: Select database → Import → Choose `database.sql` → Go
+   - Command line: `mysql -h HOST -u USER -p DATABASE < database.sql`
+
+**Note:** Method 1 or 2 is recommended as it's the easiest and doesn't require external tools!
 
 ### Step 5: Configure Environment Variables
 Railway automatically sets these for MySQL:

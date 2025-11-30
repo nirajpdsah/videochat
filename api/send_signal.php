@@ -29,7 +29,7 @@ if ($to_user_id == 0 || empty($signal_type) || empty($signal_data)) {
 }
 
 // Valid signal types
-$valid_types = ['offer', 'answer', 'ice-candidate'];
+$valid_types = ['offer', 'answer', 'ice-candidate', 'call-request'];
 if (!in_array($signal_type, $valid_types)) {
     echo json_encode(['success' => false, 'message' => 'Invalid signal type']);
     exit();

@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `signals` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `from_user_id` INT(11) NOT NULL,
     `to_user_id` INT(11) NOT NULL,
-    `signal_type` ENUM('offer', 'answer', 'ice-candidate') NOT NULL,
+    `signal_type` ENUM('offer', 'answer', 'ice-candidate', 'call-request') NOT NULL,
     `signal_data` TEXT NOT NULL,
     `call_type` ENUM('video', 'audio') DEFAULT 'video',
     `is_read` TINYINT(1) DEFAULT 0,

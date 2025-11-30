@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Poll for users every 3 seconds
     pollInterval = setInterval(loadUsers, 3000);
     
+    // Poll for incoming calls every 2 seconds
+    setInterval(checkForIncomingCalls, 2000);
+    
     // Update status before leaving page
     window.addEventListener('beforeunload', function() {
         updateUserStatus('offline');
@@ -104,11 +107,38 @@ async function updateUserStatus(status) {
 /**
  * Initiate a call
  */
-function initiateCall(userId, username, callType) {
+async function initiateCall(userId, username, callType) {
     // Check if user is busy
     const user = users.find(u => u.id === userId);
     if (user && user.status === 'on_call') {
         showBusyModal();
+        return;
+    }
+    
+    // Send call request to the other user
+    try {
+        const response = await fetch('api/send_call_request.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                to_user_id: userId,
+                call_type: callType
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            if (data.message === 'User is busy') {
+                showBusyModal();
+                return;
+            }
+            alert('Failed to initiate call: ' + (data.message || 'Unknown error'));
+            return;
+        }
+    } catch (error) {
+        console.error('Error sending call request:', error);
+        alert('Failed to send call request. Please try again.');
         return;
     }
     
@@ -289,6 +319,81 @@ function formatTime(timestamp) {
     
     // Otherwise
     return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+}
+
+/**
+ * Check for incoming call requests
+ */
+let incomingCallData = null;
+
+async function checkForIncomingCalls() {
+    try {
+        const response = await fetch('api/get_signals.php');
+        const data = await response.json();
+        
+        if (data.success && data.signals.length > 0) {
+            for (const signal of data.signals) {
+                // Check for call request
+                if (signal.signal_type === 'call-request') {
+                    // Show incoming call modal
+                    incomingCallData = {
+                        from_user_id: signal.from_user_id,
+                        from_username: signal.from_username,
+                        from_profile_picture: signal.from_profile_picture,
+                        call_type: signal.call_type
+                    };
+                    showIncomingCallModal();
+                    break; // Only show one call at a time
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking for incoming calls:', error);
+    }
+}
+
+/**
+ * Show incoming call modal
+ */
+function showIncomingCallModal() {
+    if (!incomingCallData) return;
+    
+    const modal = document.getElementById('callModal');
+    document.getElementById('callModalTitle').textContent = 
+        incomingCallData.call_type === 'video' ? 'Incoming Video Call' : 'Incoming Audio Call';
+    document.getElementById('callModalName').textContent = incomingCallData.from_username;
+    document.getElementById('callModalAvatar').src = 'uploads/' + incomingCallData.from_profile_picture;
+    modal.classList.add('active');
+    
+    // Play notification sound (optional)
+    // You can add a sound file and play it here
+}
+
+/**
+ * Accept incoming call
+ */
+function acceptCall() {
+    if (!incomingCallData) return;
+    
+    // Update status
+    updateUserStatus('on_call');
+    
+    // Redirect to call page as receiver (not initiator)
+    window.location.href = `call.php?user_id=${incomingCallData.from_user_id}&type=${incomingCallData.call_type}&initiator=false`;
+}
+
+/**
+ * Reject incoming call
+ */
+async function rejectCall() {
+    if (!incomingCallData) return;
+    
+    // Close modal
+    document.getElementById('callModal').classList.remove('active');
+    
+    // Send rejection signal (optional - you can implement this)
+    // For now, just clear the call data
+    incomingCallData = null;
 }
 
 // Allow Enter key to send message
