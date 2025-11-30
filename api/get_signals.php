@@ -27,21 +27,44 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Get unread signals for this user
-// Check if call_type column exists, if not, don't select it
-$stmt = $conn->prepare("
-    SELECT s.id, s.from_user_id, s.signal_type, s.signal_data, 
-           COALESCE(s.call_type, 'video') as call_type,
-           u.username, u.profile_picture
-    FROM signals s
-    JOIN users u ON s.from_user_id = u.id
-    WHERE s.to_user_id = ? AND s.is_read = 0
-    ORDER BY s.created_at ASC
-");
+// Check if call_type column exists
+$has_call_type = false;
+$check_column = $conn->query("SHOW COLUMNS FROM signals LIKE 'call_type'");
+if ($check_column && $check_column->num_rows > 0) {
+    $has_call_type = true;
+    if ($check_column) $check_column->free();
+}
+
+// Build query based on whether call_type exists
+if ($has_call_type) {
+    $query = "
+        SELECT s.id, s.from_user_id, s.signal_type, s.signal_data, s.call_type,
+               u.username, u.profile_picture
+        FROM signals s
+        JOIN users u ON s.from_user_id = u.id
+        WHERE s.to_user_id = ? AND s.is_read = 0
+        ORDER BY s.created_at ASC
+    ";
+} else {
+    $query = "
+        SELECT s.id, s.from_user_id, s.signal_type, s.signal_data,
+               u.username, u.profile_picture
+        FROM signals s
+        JOIN users u ON s.from_user_id = u.id
+        WHERE s.to_user_id = ? AND s.is_read = 0
+        ORDER BY s.created_at ASC
+    ";
+}
+
+$stmt = $conn->prepare($query);
 
 if (!$stmt) {
     ob_end_clean();
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Database error: ' . $conn->error,
+        'error_code' => $conn->errno
+    ]);
     exit();
 }
 
@@ -49,7 +72,11 @@ $stmt->bind_param("i", $user_id);
 
 if (!$stmt->execute()) {
     ob_end_clean();
-    echo json_encode(['success' => false, 'message' => 'Query error: ' . $stmt->error]);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Query error: ' . $stmt->error,
+        'error_code' => $stmt->errno
+    ]);
     $stmt->close();
     exit();
 }
