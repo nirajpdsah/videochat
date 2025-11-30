@@ -2,6 +2,7 @@
 /**
  * API Endpoint: Get pending WebRTC signals for current user
  * Retrieves unread signals sent to this user
+ * COMPATIBLE VERSION: Works even if is_read column is missing
  */
 
 // Prevent any output before JSON
@@ -35,26 +36,38 @@ if ($check_column && $check_column->num_rows > 0) {
     if ($check_column) $check_column->free();
 }
 
-// Build query based on whether call_type exists
-if ($has_call_type) {
-    $query = "
-        SELECT s.id, s.from_user_id, s.signal_type, s.signal_data, s.call_type,
-               u.username, u.profile_picture
-        FROM signals s
-        JOIN users u ON s.from_user_id = u.id
-        WHERE s.to_user_id = ? AND s.is_read = 0
-        ORDER BY s.created_at ASC
-    ";
-} else {
-    $query = "
-        SELECT s.id, s.from_user_id, s.signal_type, s.signal_data,
-               u.username, u.profile_picture
-        FROM signals s
-        JOIN users u ON s.from_user_id = u.id
-        WHERE s.to_user_id = ? AND s.is_read = 0
-        ORDER BY s.created_at ASC
-    ";
+// Check if is_read column exists
+$has_is_read = false;
+$check_is_read = $conn->query("SHOW COLUMNS FROM signals LIKE 'is_read'");
+if ($check_is_read && $check_is_read->num_rows > 0) {
+    $has_is_read = true;
+    if ($check_is_read) $check_is_read->free();
 }
+
+// Build SELECT clause
+$select_fields = "s.id, s.from_user_id, s.signal_type, s.signal_data";
+if ($has_call_type) {
+    $select_fields .= ", s.call_type";
+}
+if ($has_is_read) {
+    $select_fields .= ", s.is_read";
+}
+$select_fields .= ", u.username, u.profile_picture";
+
+// Build WHERE clause
+$where_clause = "s.to_user_id = ?";
+if ($has_is_read) {
+    $where_clause .= " AND s.is_read = 0";
+}
+
+// Build complete query
+$query = "
+    SELECT $select_fields
+    FROM signals s
+    JOIN users u ON s.from_user_id = u.id
+    WHERE $where_clause
+    ORDER BY s.created_at ASC
+";
 
 $stmt = $conn->prepare($query);
 
@@ -107,7 +120,8 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close();
 
 // Mark signals as read (but NOT call-request signals - they should stay until accepted/rejected)
-if (!empty($signal_ids)) {
+// Only do this if is_read column exists
+if ($has_is_read && !empty($signal_ids)) {
     // Only mark non-call-request signals as read
     // Call requests should stay unread until handled
     $ids_string = implode(',', array_map('intval', $signal_ids));
@@ -125,6 +139,7 @@ if (!empty($signal_ids)) {
 ob_end_clean();
 echo json_encode([
     'success' => true,
-    'signals' => $signals
+    'signals' => $signals,
+    'has_is_read_column' => $has_is_read  // For debugging
 ]);
 ?>

@@ -107,8 +107,8 @@ $current_user = getCurrentUser();
                 echo '<table>';
                 echo '<tr><th>ID</th><th>From</th><th>Signal Type</th><th>Call Type</th><th>Status</th><th>Created</th><th>Data Preview</th></tr>';
                 while ($row = $result->fetch_assoc()) {
-                    $status_class = $row['is_read'] ? 'read' : 'unread';
-                    $status_text = $row['is_read'] ? 'Read' : 'Unread';
+                    $status_class = isset($row['is_read']) && $row['is_read'] ? 'read' : 'unread';
+                    $status_text = isset($row['is_read']) && $row['is_read'] ? 'Read' : 'Unread';
                     $data_preview = substr($row['signal_data'], 0, 50);
                     echo '<tr>';
                     echo '<td>' . $row['id'] . '</td>';
@@ -148,8 +148,8 @@ $current_user = getCurrentUser();
                 echo '<table>';
                 echo '<tr><th>ID</th><th>To</th><th>Signal Type</th><th>Call Type</th><th>Status</th><th>Created</th><th>Data Preview</th></tr>';
                 while ($row = $result->fetch_assoc()) {
-                    $status_class = $row['is_read'] ? 'read' : 'unread';
-                    $status_text = $row['is_read'] ? 'Read' : 'Unread';
+                    $status_class = isset($row['is_read']) && $row['is_read'] ? 'read' : 'unread';
+                    $status_text = isset($row['is_read']) && $row['is_read'] ? 'Read' : 'Unread';
                     $data_preview = substr($row['signal_data'], 0, 50);
                     echo '<tr>';
                     echo '<td>' . $row['id'] . '</td>';
