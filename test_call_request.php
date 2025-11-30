@@ -158,15 +158,36 @@ $current_user = getCurrentUser();
                     })
                 });
                 
-                const data = await response.json();
+                // Get response as text first
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
                 
-                if (data.success) {
-                    resultDiv.innerHTML = '<div class="success">✅ Success: ' + data.message + '</div>';
-                } else {
-                    resultDiv.innerHTML = '<div class="error">❌ Error: ' + data.message + '</div>';
+                if (!responseText || responseText.trim() === '') {
+                    resultDiv.innerHTML = '<div class="error">❌ Empty response from server</div>';
+                    return;
+                }
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    
+                    if (data.success) {
+                        resultDiv.innerHTML = '<div class="success">✅ Success: ' + data.message + 
+                            (data.signal_id ? ' (Signal ID: ' + data.signal_id + ')' : '') + '</div>';
+                    } else {
+                        resultDiv.innerHTML = '<div class="error">❌ Error: ' + data.message + 
+                            (data.sql_error ? '<br>SQL Error: ' + data.sql_error : '') + '</div>';
+                    }
+                } catch (parseError) {
+                    resultDiv.innerHTML = '<div class="error">❌ JSON Parse Error: ' + parseError.message + 
+                        '<br>Raw response (first 500 chars):<br><pre>' + 
+                        responseText.substring(0, 500) + '</pre></div>';
                 }
             } catch (error) {
-                resultDiv.innerHTML = '<div class="error">❌ Network Error: ' + error.message + '</div>';
+                resultDiv.innerHTML = '<div class="error">❌ Network Error: ' + error.message + 
+                    '<br>Check browser console for details.</div>';
+                console.error('Full error:', error);
             }
         }
         
