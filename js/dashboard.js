@@ -133,12 +133,14 @@ async function initiateCall(userId, username, callType) {
                 showBusyModal();
                 return;
             }
+            console.error('Call request failed:', data.message);
             alert('Failed to initiate call: ' + (data.message || 'Unknown error'));
             return;
         }
     } catch (error) {
         console.error('Error sending call request:', error);
-        alert('Failed to send call request. Please try again.');
+        console.error('Error details:', error.message);
+        alert('Failed to send call request. Please check console for details and ensure the database is updated.');
         return;
     }
     

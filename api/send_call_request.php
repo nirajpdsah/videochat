@@ -33,10 +33,12 @@ $result = $check_stmt->get_result();
 
 if ($result->num_rows === 0) {
     echo json_encode(['success' => false, 'message' => 'User not found']);
+    $check_stmt->close();
     exit();
 }
 
 $target_user = $result->fetch_assoc();
+$check_stmt->close();
 
 if ($target_user['status'] === 'on_call') {
     echo json_encode(['success' => false, 'message' => 'User is busy']);
@@ -58,7 +60,14 @@ if ($stmt->execute()) {
         'message' => 'Call request sent'
     ]);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Failed to send call request']);
+    // Get the actual error message
+    $error = $stmt->error ?: $conn->error;
+    error_log("Call request error: " . $error);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Failed to send call request: ' . $error
+    ]);
 }
+$stmt->close();
 ?>
 
