@@ -147,16 +147,25 @@ async function initiateCall(userId, username, callType) {
         return;
     }
 
-    // Show calling modal
+    // Show calling modal and wait for acceptance
     showCallingModal(username, user.profile_picture);
 
     // Update own status
     updateUserStatus('on_call');
 
-    // Redirect to call page as initiator
-    setTimeout(() => {
-        window.location.href = `call.php?user_id=${userId}&type=${callType}&initiator=true`;
-    }, 1000);
+    // Store call info for later when receiver accepts
+    window.pendingCall = {
+        userId: userId,
+        callType: callType
+    };
+
+    console.log('Pending call set:', window.pendingCall);
+
+    // Start listening for call acceptance
+    if (!window.callAcceptanceInterval) {
+        window.callAcceptanceInterval = setInterval(checkForCallAcceptance, 500);
+        console.log('Started checking for call acceptance every 500ms');
+    }
 }
 
 /**
@@ -166,6 +175,11 @@ function showCallingModal(username, profilePic) {
     const modal = document.getElementById('callingModal');
     document.getElementById('callingModalName').textContent = username;
     document.getElementById('callingModalAvatar').src = 'uploads/' + profilePic;
+    
+    // Clear any previous status message (like rejection messages)
+    document.getElementById('callingModalStatus').textContent = '';
+    document.getElementById('callingModalStatus').style.color = '#95a5a6';
+    
     modal.classList.add('active');
 }
 
@@ -173,8 +187,117 @@ function showCallingModal(username, profilePic) {
  * Cancel call
  */
 function cancelCall() {
+    // Stop listening for acceptance
+    if (window.callAcceptanceInterval) {
+        clearInterval(window.callAcceptanceInterval);
+        window.callAcceptanceInterval = null;
+    }
+    
+    // Clear pending call
+    window.pendingCall = null;
+    
     document.getElementById('callingModal').classList.remove('active');
     updateUserStatus('online');
+}
+
+/**
+ * Check if receiver has accepted the call
+ */
+async function checkForCallAcceptance() {
+    if (!window.pendingCall) return;
+
+    try {
+        const response = await fetch('api/get_signals.php');
+        if (!response.ok) {
+            console.log('Failed to fetch signals for call acceptance, status:', response.status);
+            return;
+        }
+
+        const responseText = await response.text();
+        let data;
+
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('JSON parse error in checkForCallAcceptance:', parseError);
+            console.error('Raw response:', responseText);
+            return;
+        }
+
+        console.log('Checking for call acceptance, signals:', data.signals?.length || 0);
+        console.log('Full response:', data);
+
+        if (data.success && data.signals && data.signals.length > 0) {
+            for (const signal of data.signals) {
+                console.log('Signal:', signal.signal_type, 'from:', signal.from_user_id, 'expecting from:', window.pendingCall.userId);
+                
+                // Check if receiver sent call-accepted signal
+                if (signal.signal_type === 'call-accepted' && 
+                    signal.from_user_id === window.pendingCall.userId) {
+                    
+                    console.log('Call accepted! Redirecting to call page...');
+                    
+                    // Stop checking immediately
+                    clearInterval(window.callAcceptanceInterval);
+                    window.callAcceptanceInterval = null;
+                    
+                    // Delete the acceptance signal so receiver doesn't process it
+                    fetch('api/delete_signal.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            from_user_id: signal.from_user_id,
+                            signal_type: 'call-accepted'
+                        })
+                    }).catch(e => console.error('Error deleting acceptance signal:', e));
+                    
+                    // Close modal
+                    document.getElementById('callingModal').classList.remove('active');
+                    
+                    // Redirect to call page
+                    window.location.href = `call.php?user_id=${window.pendingCall.userId}&type=${window.pendingCall.callType}&initiator=true`;
+                    return;
+                }
+                
+                // Check if receiver rejected the call
+                if (signal.signal_type === 'call-rejected' && 
+                    signal.from_user_id === window.pendingCall.userId) {
+                    
+                    console.log('Call rejected by receiver!');
+                    
+                    // Stop checking immediately
+                    clearInterval(window.callAcceptanceInterval);
+                    window.callAcceptanceInterval = null;
+                    
+                    // Delete the rejection signal
+                    fetch('api/delete_signal.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            from_user_id: signal.from_user_id,
+                            signal_type: 'call-rejected'
+                        })
+                    }).catch(e => console.error('Error deleting rejection signal:', e));
+                    
+                    // Show rejection message in modal
+                    document.getElementById('callingModalStatus').textContent = 'Call Rejected from Other Side';
+                    document.getElementById('callingModalStatus').style.color = '#e74c3c';
+                    
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        document.getElementById('callingModal').classList.remove('active');
+                        updateUserStatus('online');
+                        window.pendingCall = null;
+                    }, 2000);
+                    return;
+                }
+            }
+        } else {
+            console.log('No signals found or data.success is false. Success:', data.success, 'Signals:', data.signals);
+        }
+    } catch (error) {
+        console.error('Error checking for call acceptance:', error);
+    }
 }
 
 /**
@@ -411,6 +534,45 @@ function showIncomingCallModal() {
 async function acceptCall() {
     if (!incomingCallData) return;
 
+    console.log('Accepting call from user:', incomingCallData.from_user_id);
+    console.log('Sending call-accepted signal...');
+
+    // STOP checking for incoming calls immediately to prevent consuming signals
+    callModalShown = false; // This will stop checkForIncomingCalls from running
+
+    // Send "ready" signal to caller to let them know we accepted
+    try {
+        const signalPayload = {
+            to_user_id: incomingCallData.from_user_id,
+            signal_type: 'call-accepted',
+            signal_data: { accepted: true },
+            call_type: incomingCallData.call_type
+        };
+        
+        console.log('Signal payload:', signalPayload);
+        
+        const response = await fetch('api/send_signal.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(signalPayload)
+        });
+        
+        const result = await response.json();
+        console.log('Call acceptance signal sent, response:', result);
+        
+        if (!result.success) {
+            console.error('Failed to send acceptance signal:', result.message);
+            alert('Failed to send acceptance signal: ' + result.message);
+            callModalShown = true; // Re-enable if failed
+            return;
+        }
+    } catch (error) {
+        console.error('Error sending acceptance signal:', error);
+        alert('Error sending acceptance signal: ' + error.message);
+        callModalShown = true; // Re-enable if failed
+        return;
+    }
+
     // Delete the call-request signal
     try {
         await fetch('api/delete_signal.php', {
@@ -428,10 +590,11 @@ async function acceptCall() {
     await updateUserStatus('on_call');
 
     // Close modal
-    callModalShown = false;
     document.getElementById('callModal').classList.remove('active');
 
-    // Redirect to call page as receiver (not initiator)
+    console.log('=== ACCEPTANCE COMPLETE, REDIRECTING IMMEDIATELY ===');
+
+    // Redirect to call page as receiver (not initiator) - NO DELAY
     window.location.href = `call.php?user_id=${incomingCallData.from_user_id}&type=${incomingCallData.call_type}&initiator=false`;
 }
 
@@ -440,6 +603,31 @@ async function acceptCall() {
  */
 async function rejectCall() {
     if (!incomingCallData) return;
+
+    console.log('Rejecting call from user:', incomingCallData.from_user_id);
+
+    // Send "call-rejected" signal to the caller
+    try {
+        const signalPayload = {
+            to_user_id: incomingCallData.from_user_id,
+            signal_type: 'call-rejected',
+            signal_data: { rejected: true },
+            call_type: incomingCallData.call_type
+        };
+        
+        console.log('Sending rejection signal:', signalPayload);
+        
+        const response = await fetch('api/send_signal.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(signalPayload)
+        });
+        
+        const result = await response.json();
+        console.log('Call rejection signal sent, response:', result);
+    } catch (error) {
+        console.error('Error sending rejection signal:', error);
+    }
 
     // Delete the call-request signal
     try {

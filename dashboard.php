@@ -1,6 +1,11 @@
 <?php
 require_once 'config.php';
 
+// Prevent caching
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // Redirect to login if not logged in
 if (!isLoggedIn()) {
     header('Location: login.php');
@@ -15,7 +20,7 @@ $current_user = getCurrentUser();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - VideoChat</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <div class="dashboard-container">
@@ -74,6 +79,7 @@ $current_user = getCurrentUser();
             <h3>Calling...</h3>
             <img id="callingModalAvatar" src="" alt="Avatar" class="profile-pic-large">
             <p id="callingModalName"></p>
+            <p id="callingModalStatus" style="color: #95a5a6; font-size: 0.9em; margin-top: 10px;"></p>
             <button onclick="cancelCall()" class="btn btn-danger">Cancel</button>
         </div>
     </div>
@@ -92,6 +98,6 @@ $current_user = getCurrentUser();
         let selectedUserId = null;
         let selectedUsername = null;
     </script>
-    <script src="js/dashboard.js"></script>
+    <script src="js/dashboard.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

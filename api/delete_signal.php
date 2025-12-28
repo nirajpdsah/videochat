@@ -18,19 +18,20 @@ $user_id = $_SESSION['user_id'];
 // Get JSON data
 $input = json_decode(file_get_contents('php://input'), true);
 $from_user_id = isset($input['from_user_id']) ? intval($input['from_user_id']) : 0;
+$signal_type = isset($input['signal_type']) ? $input['signal_type'] : 'call-request';
 
 if ($from_user_id == 0) {
     echo json_encode(['success' => false, 'message' => 'Invalid user ID']);
     exit();
 }
 
-// Delete call-request signals from this user
+// Delete signals from this user
 $stmt = $conn->prepare("
     DELETE FROM signals 
-    WHERE from_user_id = ? AND to_user_id = ? AND signal_type = 'call-request'
+    WHERE from_user_id = ? AND to_user_id = ? AND signal_type = ?
 ");
 
-$stmt->bind_param("ii", $from_user_id, $user_id);
+$stmt->bind_param("iis", $from_user_id, $user_id, $signal_type);
 
 if ($stmt->execute()) {
     $deleted_count = $stmt->affected_rows;

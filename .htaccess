@@ -8,6 +8,17 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # Set default index file
 DirectoryIndex index.php
 
+# Disable directory listing
+Options -Indexes
+
+# Block direct access to sensitive files
+<FilesMatch "\.(env|sql|bak|ini|log|md)$">
+    Require all denied
+</FilesMatch>
+<Files "config.php">
+    Require all denied
+</Files>
+
 # Enable CORS for API endpoints (if needed)
 <IfModule mod_headers.c>
     Header set Access-Control-Allow-Origin "*"
@@ -22,10 +33,18 @@ DirectoryIndex index.php
     Header set X-XSS-Protection "1; mode=block"
 </IfModule>
 
-# PHP settings
-<IfModule mod_php7.c>
-    php_value upload_max_filesize 10M
-    php_value post_max_size 10M
-    php_value max_execution_time 300
-    php_value max_input_time 300
+# Cache static assets on the edge
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType image/png "access plus 7 days"
+    ExpiresByType image/jpeg "access plus 7 days"
+    ExpiresByType image/gif "access plus 7 days"
+    ExpiresByType image/svg+xml "access plus 7 days"
+    ExpiresByType image/webp "access plus 7 days"
+    ExpiresByType image/x-icon "access plus 7 days"
+    ExpiresByType font/woff "access plus 7 days"
+    ExpiresByType font/woff2 "access plus 7 days"
+    ExpiresByType font/ttf "access plus 7 days"
 </IfModule>

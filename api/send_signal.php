@@ -24,31 +24,58 @@ $call_type = isset($input['call_type']) ? $input['call_type'] : 'video';
 
 // Validation
 if ($to_user_id == 0 || empty($signal_type) || empty($signal_data)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
+    error_log("send_signal.php validation failed - to_user_id: $to_user_id, signal_type: '$signal_type', signal_data empty: " . (empty($signal_data) ? 'yes' : 'no'));
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Invalid parameters',
+        'debug' => [
+            'to_user_id' => $to_user_id,
+            'signal_type' => $signal_type,
+            'has_signal_data' => !empty($signal_data)
+        ]
+    ]);
     exit();
 }
 
 // Valid signal types
-$valid_types = ['offer', 'answer', 'ice-candidate', 'call-request'];
+$valid_types = ['offer', 'answer', 'ice-candidate', 'call-request', 'call-accepted', 'call-rejected', 'call-ended', 'receiver-ready'];
 if (!in_array($signal_type, $valid_types)) {
-    echo json_encode(['success' => false, 'message' => 'Invalid signal type']);
+    error_log("send_signal.php invalid signal type: '$signal_type'");
+    echo json_encode(['success' => false, 'message' => 'Invalid signal type: ' . $signal_type]);
     exit();
 }
 
-// Insert signal into database
-$stmt = $conn->prepare("
-    INSERT INTO signals (from_user_id, to_user_id, signal_type, signal_data, call_type) 
-    VALUES (?, ?, ?, ?, ?)
-");
-$stmt->bind_param("iisss", $from_user_id, $to_user_id, $signal_type, $signal_data, $call_type);
+// Log what we're about to insert
+error_log("send_signal.php inserting - from: $from_user_id, to: $to_user_id, type: '$signal_type', call_type: '$call_type'");
 
-if ($stmt->execute()) {
+// Insert signal into database - use direct query instead of bind_param to debug
+$signal_type_escaped = $conn->real_escape_string($signal_type);
+$signal_data_escaped = $conn->real_escape_string($signal_data);
+$call_type_escaped = $conn->real_escape_string($call_type);
+
+$query = "INSERT INTO signals (from_user_id, to_user_id, signal_type, signal_data, call_type) 
+          VALUES ($from_user_id, $to_user_id, '$signal_type_escaped', '$signal_data_escaped', '$call_type_escaped')";
+
+if ($conn->query($query)) {
+    $signal_id = $conn->insert_id;
+    
+    // Immediately query back what was inserted to verify
+    $verify = $conn->query("SELECT signal_type, call_type FROM signals WHERE id = $signal_id");
+    $inserted = $verify->fetch_assoc();
+    
     echo json_encode([
         'success' => true,
         'message' => 'Signal sent',
-        'signal_id' => $conn->insert_id
+        'signal_id' => $signal_id,
+        'debug' => [
+            'sent_signal_type' => $signal_type,
+            'sent_call_type' => $call_type,
+            'db_signal_type' => $inserted['signal_type'],
+            'db_call_type' => $inserted['call_type'],
+            'query' => $query
+        ]
     ]);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Failed to send signal']);
+    echo json_encode(['success' => false, 'message' => 'Failed to send signal: ' . $conn->error, 'query' => $query]);
 }
 ?>

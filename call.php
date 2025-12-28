@@ -1,6 +1,11 @@
 <?php
 require_once 'config.php';
 
+// Prevent caching
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // Redirect to login if not logged in
 if (!isLoggedIn()) {
     header('Location: login.php');
@@ -42,7 +47,7 @@ $update_stmt->execute();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $call_type == 'video' ? 'Video' : 'Audio'; ?> Call - VideoChat</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body class="call-body">
     <div class="call-container">
@@ -86,6 +91,6 @@ $update_stmt->execute();
         const callType = '<?php echo $call_type; ?>';
         const isInitiator = <?php echo $is_initiator ? 'true' : 'false'; ?>;
     </script>
-    <script src="js/webrtc.js"></script>
+    <script src="js/webrtc.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

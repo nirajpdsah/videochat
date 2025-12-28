@@ -119,16 +119,17 @@ while ($row = $result->fetch_assoc()) {
 
 $stmt->close();
 
-// Mark signals as read (but NOT call-request signals - they should stay until accepted/rejected)
+// Mark signals as read (but NOT call-request or call-accepted signals - they should stay until processed)
 // Only do this if is_read column exists
 if ($has_is_read && !empty($signal_ids)) {
-    // Only mark non-call-request signals as read
+    // Only mark non-call-request and non-call-accepted signals as read
     // Call requests should stay unread until handled
+    // Call accepted signals should stay unread until initiator processes them
     $ids_string = implode(',', array_map('intval', $signal_ids));
     $update_stmt = $conn->prepare("
         UPDATE signals 
         SET is_read = 1 
-        WHERE id IN ($ids_string) AND signal_type != 'call-request'
+        WHERE id IN ($ids_string) AND signal_type NOT IN ('call-request', 'call-accepted')
     ");
     if ($update_stmt) {
         $update_stmt->execute();
