@@ -9,6 +9,11 @@
 .env.production
 .env.staging
 
+# Configuration files (contain sensitive data)
+config.php
+config.production.php
+env.production.php
+
 # IDE
 .vscode/
 .idea/
@@ -36,6 +41,12 @@ npm-debug.log
 # Temporary files
 *.tmp
 *.temp
+
+# Test and debug files
+test_*.php
+debug_*.php
+*_test.php
+*_debug.php
 
 # Database backups
 *.sql.gz
