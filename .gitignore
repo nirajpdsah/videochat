@@ -52,6 +52,9 @@ debug_*.php
 *.sql.gz
 *.sql.bak
 
-# Railway
+# Deployment files (not used)
 .railway/
+railway.json
+procfile
+Procfile
 
