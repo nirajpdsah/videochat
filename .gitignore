@@ -48,9 +48,8 @@ debug_*.php
 *_test.php
 *_debug.php
 
-# Database files (keep only database.sql for fresh installs)
+# Database files
 *.sql
-!database.sql
 
 # Database backups
 *.sql.gz
