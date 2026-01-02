@@ -1,11 +1,10 @@
 /**
  * Dashboard JavaScript
- * Handles user list, chat functionality, and call initiation
+ * Handles user list and call initiation
  */
 
 let users = [];
 let pollInterval = null;
-let messagesInterval = null;
 
 // Load users on page load
 document.addEventListener('DOMContentLoaded', function () {
@@ -79,10 +78,6 @@ function displayUsers() {
                     <button class="action-btn audio" onclick="initiateCall(${user.id}, '${user.username}', 'audio')" 
                             ${user.status === 'on_call' ? 'disabled' : ''} title="Audio Call">
                         📞
-                    </button>
-                    <button class="action-btn chat" onclick="openChat(${user.id}, '${user.username}', '${user.profile_picture}')" 
-                            title="Chat">
-                        💬
                     </button>
                 </div>
             </div>
@@ -315,119 +310,6 @@ function closeBusyModal() {
 }
 
 /**
- * Open chat with a user
- */
-function openChat(userId, username, profilePic) {
-    selectedUserId = userId;
-    selectedUsername = username;
-
-    // Update chat header
-    document.getElementById('chatHeader').innerHTML = `
-        <img src="uploads/${profilePic}" alt="${username}" class="profile-pic-small">
-        <span>${username}</span>
-    `;
-
-    // Show chat input
-    document.getElementById('chatInput').style.display = 'flex';
-
-    // Load messages
-    loadMessages();
-
-    // Start polling for new messages
-    if (messagesInterval) {
-        clearInterval(messagesInterval);
-    }
-    messagesInterval = setInterval(loadMessages, 2000);
-
-    // Highlight selected user
-    document.querySelectorAll('.user-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelector(`[data-user-id="${userId}"]`).classList.add('active');
-}
-
-/**
- * Load messages with selected user
- */
-async function loadMessages() {
-    if (!selectedUserId) return;
-
-    try {
-        const response = await fetch(`api/messages.php?user_id=${selectedUserId}`);
-        const data = await response.json();
-
-        if (data.success) {
-            displayMessages(data.messages);
-        }
-    } catch (error) {
-        console.error('Error loading messages:', error);
-    }
-}
-
-/**
- * Display messages in chat
- */
-function displayMessages(messages) {
-    const chatMessages = document.getElementById('chatMessages');
-
-    if (messages.length === 0) {
-        chatMessages.innerHTML = '<div class="loading">No messages yet. Start chatting!</div>';
-        return;
-    }
-
-    let html = '';
-    messages.forEach(msg => {
-        const isSent = msg.from_user_id === currentUserId;
-        const messageClass = isSent ? 'sent' : '';
-
-        html += `
-            <div class="message ${messageClass}">
-                <img src="uploads/${msg.profile_picture}" alt="${msg.username}">
-                <div class="message-content">
-                    <p>${msg.message}</p>
-                    <span>${formatTime(msg.created_at)}</span>
-                </div>
-            </div>
-        `;
-    });
-
-    chatMessages.innerHTML = html;
-
-    // Scroll to bottom
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-/**
- * Send a message
- */
-async function sendMessage() {
-    const input = document.getElementById('messageInput');
-    const message = input.value.trim();
-
-    if (!message || !selectedUserId) return;
-
-    try {
-        const response = await fetch('api/messages.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                to_user_id: selectedUserId,
-                message: message
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            input.value = '';
-            loadMessages();
-        }
-    } catch (error) {
-        console.error('Error sending message:', error);
-    }
-}
-
-/**
  * Format timestamp
  */
 function formatTime(timestamp) {
@@ -649,15 +531,3 @@ async function rejectCall() {
     // Clear the call data
     incomingCallData = null;
 }
-
-// Allow Enter key to send message
-document.addEventListener('DOMContentLoaded', function () {
-    const input = document.getElementById('messageInput');
-    if (input) {
-        input.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-    }
-});

@@ -43,20 +43,6 @@ $current_user = getCurrentUser();
                     <div class="loading">Loading users...</div>
                 </div>
             </div>
-
-            <!-- Chat Panel -->
-            <div class="chat-panel">
-                <div id="chatHeader" class="chat-header">
-                    <span>Select a user to start chatting</span>
-                </div>
-                <div id="chatMessages" class="chat-messages">
-                    <!-- Messages will appear here -->
-                </div>
-                <div id="chatInput" class="chat-input" style="display: none;">
-                    <input type="text" id="messageInput" placeholder="Type a message...">
-                    <button onclick="sendMessage()" class="btn btn-primary">Send</button>
-                </div>
-            </div>
         </div>
     </div>
 
