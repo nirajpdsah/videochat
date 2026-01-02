@@ -63,8 +63,16 @@ function displayUsers() {
     let html = '';
     users.forEach(user => {
         const statusClass = `status-${user.status}`;
-        const statusText = user.status === 'online' ? 'Online' :
-            user.status === 'on_call' ? 'On a call' : 'Offline';
+        let statusText;
+        
+        if (user.status === 'online') {
+            statusText = 'Online';
+        } else if (user.status === 'on_call') {
+            statusText = 'On a call';
+        } else {
+            // Show last seen for offline users
+            statusText = `Last seen ${formatLastSeen(user.last_seen)}`;
+        }
 
         html += `
             <div class="user-item" data-user-id="${user.id}">
@@ -313,6 +321,28 @@ function showBusyModal() {
  */
 function closeBusyModal() {
     document.getElementById('busyModal').classList.remove('active');
+}
+
+/**
+ * Format timestamp for last seen
+ */
+function formatLastSeen(timestamp) {
+    if (!timestamp) return 'Long time ago';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 /**
