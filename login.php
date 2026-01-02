@@ -37,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 
-                // Update user status to online
-                $update_stmt = $conn->prepare("UPDATE users SET status = 'online' WHERE id = ?");
+                // Update user status to online and set last_seen
+                $update_stmt = $conn->prepare("UPDATE users SET status = 'online', last_seen = NOW() WHERE id = ?");
                 $update_stmt->bind_param("i", $user['id']);
                 $update_stmt->execute();
                 

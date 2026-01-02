@@ -15,8 +15,8 @@ if (!isLoggedIn()) {
 
 $current_user_id = $_SESSION['user_id'];
 
-// First, mark users as offline if they haven't been active in last 15 seconds
-$conn->query("UPDATE users SET status = 'offline' WHERE status = 'online' AND last_seen < DATE_SUB(NOW(), INTERVAL 15 SECOND)");
+// First, mark users as offline if they haven't been active in last 15 seconds or have NULL last_seen
+$conn->query("UPDATE users SET status = 'offline' WHERE status = 'online' AND (last_seen IS NULL OR last_seen < DATE_SUB(NOW(), INTERVAL 15 SECOND))");
 
 // Get all users except current user
 $stmt = $conn->prepare("

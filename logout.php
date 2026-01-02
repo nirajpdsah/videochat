@@ -6,9 +6,9 @@
 require_once 'config.php';
 
 if (isLoggedIn()) {
-    // Update user status to offline
+    // Update user status to offline and update last_seen
     $user_id = $_SESSION['user_id'];
-    $stmt = $conn->prepare("UPDATE users SET status = 'offline' WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE users SET status = 'offline', last_seen = NOW() WHERE id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     
