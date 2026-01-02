@@ -5,6 +5,7 @@
 
 let users = [];
 let pollInterval = null;
+let heartbeatInterval = null;
 
 // Load users on page load
 document.addEventListener('DOMContentLoaded', function () {
@@ -16,6 +17,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Poll for incoming calls every 1 second (faster notification)
     setInterval(checkForIncomingCalls, 1000);
+
+    // Send heartbeat every 10 seconds to keep user marked as online
+    heartbeatInterval = setInterval(() => {
+        updateUserStatus('online');
+    }, 10000);
 
     // Update status before leaving page
     window.addEventListener('beforeunload', function () {

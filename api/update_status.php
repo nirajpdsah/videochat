@@ -25,8 +25,8 @@ if (!in_array($status, $valid_statuses)) {
 
 $user_id = $_SESSION['user_id'];
 
-// Update user status
-$stmt = $conn->prepare("UPDATE users SET status = ? WHERE id = ?");
+// Update user status and last_seen timestamp
+$stmt = $conn->prepare("UPDATE users SET status = ?, last_seen = NOW() WHERE id = ?");
 $stmt->bind_param("si", $status, $user_id);
 
 if ($stmt->execute()) {
