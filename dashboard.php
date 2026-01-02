@@ -19,16 +19,20 @@ $current_user = getCurrentUser();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - VideoChat</title>
+    <title>Dashboard - Wartalaap</title>
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <div class="dashboard-container">
         <!-- Header -->
         <header class="dashboard-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="uploads/logo.png" alt="Wartalaap" style="width: 32px; height: 32px;">
+                <h1 style="margin: 0; font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Wartalaap</h1>
+            </div>
             <div class="user-info">
                 <img src="uploads/<?php echo $current_user['profile_picture']; ?>" alt="Profile" class="profile-pic-small">
-                <span><?php echo htmlspecialchars($current_user['username']); ?></span>
+                <h3><?php echo htmlspecialchars($current_user['username']); ?></h3>
             </div>
             <a href="logout.php" class="btn btn-secondary">Logout</a>
         </header>
@@ -37,7 +41,7 @@ $current_user = getCurrentUser();
         <div class="dashboard-content">
             <!-- Users List -->
             <div class="users-panel">
-                <h3>Users</h3>
+                <h3>Start a Conversation</h3>
                 <div id="usersList" class="users-list">
                     <!-- Users will be loaded here via JavaScript -->
                     <div class="loading">Loading users...</div>

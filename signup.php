@@ -79,13 +79,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - VideoChat</title>
+    <title>Sign Up - Wartalaap</title>
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-box">
-            <h2>Create Account</h2>
+            <h2>Join Wartalaap</h2>
             
             <?php if ($error): ?>
                 <div class="alert error"><?php echo $error; ?></div>

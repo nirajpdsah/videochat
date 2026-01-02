@@ -21,7 +21,7 @@ if (isLoggedIn()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VideoChat - Modern Video & Audio Calls</title>
+    <title>Wartalaap - Where Conversations Come Alive</title>
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
     <style>
         body {
@@ -52,9 +52,9 @@ if (isLoggedIn()) {
             margin-bottom: 16px;
         }
 
-        .landing-header svg {
-            width: 48px;
-            height: 48px;
+        .landing-header img {
+            width: 56px;
+            height: 56px;
             filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
         }
 
@@ -226,13 +226,10 @@ if (isLoggedIn()) {
     <div class="landing-wrapper">
         <div class="landing-container">
             <div class="landing-header">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 7l-7 5 7 5V7z"></path>
-                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-                </svg>
-                <h1>VideoChat</h1>
+                <img src="uploads/logo.png" alt="Wartalaap Logo">
+                <h1>Wartalaap</h1>
             </div>
-            <p>Connect face-to-face with anyone, anywhere. Crystal clear video and audio calls powered by modern web technology.</p>
+            <p>Where meaningful conversations happen. Connect through crystal clear video and audio calls, bringing people closer no matter the distance.</p>
             
             <div class="landing-buttons">
                 <a href="login.php" class="btn btn-primary">Sign In</a>
@@ -241,16 +238,16 @@ if (isLoggedIn()) {
 
             <div class="stats">
                 <div class="stat">
-                    <span class="stat-number">0ms</span>
-                    <span class="stat-label">Latency</span>
+                    <span class="stat-number">Real-Time</span>
+                    <span class="stat-label">Conversations</span>
                 </div>
                 <div class="stat">
                     <span class="stat-number">720p</span>
                     <span class="stat-label">HD Quality</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number">P2P</span>
-                    <span class="stat-label">Encrypted</span>
+                    <span class="stat-number">Secure</span>
+                    <span class="stat-label">End-to-End</span>
                 </div>
             </div>
         </div>
@@ -263,8 +260,8 @@ if (isLoggedIn()) {
                         <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
                     </svg>
                 </div>
-                <h3>HD Video Calls</h3>
-                <p>Experience crystal clear 720p video calls with minimal latency for a seamless connection.</p>
+                <h3>Face-to-Face Dialogue</h3>
+                <p>Experience crystal clear HD video calls that make you feel like you're in the same room.</p>
             </div>
 
             <div class="feature">
@@ -273,8 +270,8 @@ if (isLoggedIn()) {
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                     </svg>
                 </div>
-                <h3>Audio Calls</h3>
-                <p>Make crystal clear voice calls with high-quality audio, perfect for when you're on the go.</p>
+                <h3>Voice Conversations</h3>
+                <p>Have meaningful voice-only conversations with pristine audio quality, perfect for on-the-go discussions.</p>
             </div>
 
             <div class="feature">
@@ -284,8 +281,8 @@ if (isLoggedIn()) {
                         <path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
                     </svg>
                 </div>
-                <h3>Instant Connectivity</h3>
-                <p>No downloads or complex setup required. Simply sign up and start calling instantly.</p>
+                <h3>Instant Connection</h3>
+                <p>No downloads needed. Sign up and start your conversations within seconds.</p>
             </div>
 
             <div class="feature">
@@ -294,8 +291,8 @@ if (isLoggedIn()) {
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                     </svg>
                 </div>
-                <h3>Privacy & Security</h3>
-                <p>Your calls are peer-to-peer encrypted. We never store your conversations or personal data.</p>
+                <h3>Private Conversations</h3>
+                <p>Your dialogues stay between you. Peer-to-peer encryption ensures your conversations remain private.</p>
             </div>
 
             <div class="feature">

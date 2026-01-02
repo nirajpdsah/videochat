@@ -46,7 +46,7 @@ $update_stmt->execute();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $call_type == 'video' ? 'Video' : 'Audio'; ?> Call - VideoChat</title>
+    <title><?php echo $call_type == 'video' ? 'Video' : 'Voice'; ?> Call - Wartalaap</title>
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body class="call-body">

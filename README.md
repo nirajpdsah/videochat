@@ -1,6 +1,8 @@
-# 🎥 VideoChat - Modern Real-Time Video Calling
+# 🗣️ Wartalaap - Where Conversations Come Alive
 
-A sleek, professional video calling web application where users can make crystal-clear video and audio calls in real-time. Built with PHP, MySQL, and WebRTC technology with a modern, responsive UI.
+**वार्तालाप (Wartalaap)** means "conversation" or "dialogue" in Hindi/Urdu - a beautiful word that captures the essence of meaningful human connection.
+
+A modern, professional video calling web application that brings people together through crystal-clear conversations. Built with PHP, MySQL, and WebRTC technology with a focus on simplicity and elegance.
 
 ---
 
@@ -21,15 +23,15 @@ A sleek, professional video calling web application where users can make crystal
 
 ## 🤔 What is This Project?
 
-VideoChat is a modern web application that allows users to:
-- **Register and login** to their account with profile pictures
-- **See who's online** in real-time with live status updates
-- **Make video calls** to other users with HD quality
-- **Make audio-only calls** when you prefer voice only
-- **Instant notifications** when someone calls you
-- **Peer-to-peer encrypted** connections for privacy
+Wartalaap (वार्तालाप - "conversation") is a modern web application that enables meaningful dialogues through technology. Users can:
+- **Register and create profiles** with personalized avatars
+- **See who's available** for conversation in real-time
+- **Initiate video dialogues** with HD quality
+- **Have voice-only conversations** when preferred
+- **Connect instantly** with end-to-end encrypted calls
+- **Experience seamless communication** across all devices
 
-Think of it like a simplified version of Zoom or Microsoft Teams, but built with modern web technology and optimized for simplicity and speed.
+Inspired by the timeless value of human conversation, Wartalaap combines traditional communication values with modern technology - creating a space where every dialogue matters.
 
 ---
 
@@ -265,7 +267,7 @@ Or download ZIP file from GitHub and extract it.
 
 1. **Open Your Browser**
    - Go to: `http://localhost/videochat`
-   - You should see a beautiful landing page with feature cards
+   - You should see Wartalaap's beautiful landing page
    - If you see an error, check troubleshooting section below
 
 2. **Create Test Accounts**
@@ -282,16 +284,16 @@ Or download ZIP file from GitHub and extract it.
      - Email: `bob@test.com`
      - Password: `Test123!`
 
-3. **Test a Call** 📞
+3. **Test a Conversation** 🗣️
    - Open two browser windows/tabs
    - Login as `alice` in first window
    - Login as `bob` in second window (or use incognito mode)
    - In Alice's dashboard, find Bob's user card
-   - Click the blue video camera icon to call Bob
+   - Click the blue video camera icon to start a video conversation
    - Bob should see a notification popup
    - Bob clicks "Accept"
    - Grant camera/microphone permissions when prompted
-   - You should see video and hear audio from both sides! 🎉
+   - You should see video and hear audio - your first Wartalaap conversation! 🎉
 
 ### Troubleshooting Installation
 
@@ -310,6 +312,10 @@ Or download ZIP file from GitHub and extract it.
 **Issue: "Not secure" warning**
 - This is normal for localhost
 - Click "Advanced" → "Proceed to localhost" or similar button
+
+**Issue: Logo not showing**
+- Make sure `uploads/logo.png` exists
+- Check file permissions on uploads folder
 
 ---
 
