@@ -59,6 +59,15 @@ $update_stmt->execute();
                 <p class="video-off-text"><?php echo htmlspecialchars($remote_user['username']); ?></p>
                 <p class="video-off-subtext">Camera is off</p>
             </div>
+            <div class="mic-off-indicator" id="remoteMicOffIndicator">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2"></line>
+                    <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                    <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                    <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2"></line>
+                    <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2"></line>
+                </svg>
+            </div>
             <div class="video-info">
                 <img src="uploads/<?php echo !empty($remote_user['profile_picture']) ? $remote_user['profile_picture'] : 'default-avatar.png'; ?>" alt="Avatar" class="call-avatar">
                 <h3><?php echo htmlspecialchars($remote_user['username']); ?></h3>
@@ -71,6 +80,15 @@ $update_stmt->execute();
             <video id="localVideo" autoplay muted playsinline></video>
             <div class="video-off-overlay" id="localVideoOffOverlay">
                 <img src="uploads/<?php echo !empty($current_user['profile_picture']) ? $current_user['profile_picture'] : 'default-avatar.png'; ?>" alt="Avatar" class="video-off-avatar local">
+            </div>
+            <div class="mic-off-indicator" id="localMicOffIndicator">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2"></line>
+                    <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                    <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                    <line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2"></line>
+                    <line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2"></line>
+                </svg>
             </div>
             <p>You</p>
         </div>

@@ -802,6 +802,59 @@ h6 {
     margin: 0;
 }
 
+/* Mic Off Indicator (WhatsApp style) */
+.mic-off-indicator {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(239, 68, 68, 0.95);
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    animation: mic-pulse 2s infinite;
+}
+
+.mic-off-indicator.visible {
+    display: flex;
+}
+
+.mic-off-indicator svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: white;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+@keyframes mic-pulse {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.7);
+    }
+}
+
+/* Smaller mic indicator for local PiP window */
+.local-video .mic-off-indicator {
+    bottom: 10px;
+    left: 10px;
+    width: 28px;
+    height: 28px;
+}
+
+.local-video .mic-off-indicator svg {
+    width: 14px;
+    height: 14px;
+}
+
 .call-controls {
     position: absolute;
     bottom: 40px;

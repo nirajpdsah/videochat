@@ -18,6 +18,7 @@ let signalingInterval = null;
 let isAudioEnabled = true;
 let isVideoEnabled = true;
 let isRemoteVideoEnabled = true; // Track remote peer's video state via signaling
+let isRemoteAudioEnabled = true; // Track remote peer's audio state via signaling
 let isCallConnected = false; // Track if WebRTC connection is established
 let pendingIceCandidates = []; // Queue ICE candidates until offer/answer is set
 
@@ -502,6 +503,28 @@ async function checkForSignals() {
                             console.error('Remote overlay element not found!');
                         }
                         break;
+                    case 'audio-status':
+                        console.log('Received audio-status signal:', signal.signal_data);
+                        isRemoteAudioEnabled = signal.signal_data.enabled;
+                        const remoteMicIndicator = document.getElementById('remoteMicOffIndicator');
+                        console.log('Remote mic indicator element:', remoteMicIndicator);
+                        console.log('Call connected status:', isCallConnected);
+                        
+                        // Only show/hide indicator if call is fully connected
+                        if (remoteMicIndicator && isCallConnected) {
+                            if (!isRemoteAudioEnabled) {
+                                console.log('Showing remote mic-off indicator');
+                                remoteMicIndicator.classList.add('visible');
+                            } else {
+                                console.log('Hiding remote mic-off indicator');
+                                remoteMicIndicator.classList.remove('visible');
+                            }
+                        } else if (!isCallConnected) {
+                            console.log('Call not connected yet, ignoring audio-status signal');
+                        } else {
+                            console.error('Remote mic indicator element not found!');
+                        }
+                        break;
                 }
             }
         }
@@ -514,11 +537,29 @@ async function checkForSignals() {
  * Toggle audio on/off
  */
 function toggleAudio() {
+    console.log('toggleAudio() called');
     if (localStream) {
         const audioTrack = localStream.getAudioTracks()[0];
         if (audioTrack) {
             isAudioEnabled = !isAudioEnabled;
             audioTrack.enabled = isAudioEnabled;
+            console.log('Audio toggled. New state:', isAudioEnabled);
+
+            // Update local mic indicator visibility
+            const localMicIndicator = document.getElementById('localMicOffIndicator');
+            if (localMicIndicator) {
+                if (!isAudioEnabled) {
+                    localMicIndicator.classList.add('visible');
+                    console.log('Local mic indicator shown');
+                } else {
+                    localMicIndicator.classList.remove('visible');
+                    console.log('Local mic indicator hidden');
+                }
+            }
+
+            // Send signal to remote peer
+            console.log('Sending audio-status signal to remote peer:', { enabled: isAudioEnabled, to: remoteUserId });
+            sendSignal('audio-status', { enabled: isAudioEnabled });
 
             const audioIcon = document.getElementById('audioIcon');
             audioIcon.innerHTML = isAudioEnabled ? `
