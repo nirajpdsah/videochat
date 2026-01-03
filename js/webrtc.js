@@ -249,71 +249,30 @@ function createPeerConnection() {
 
 /**
  * Monitor remote video track to show/hide avatar when video is off
+ * Now relies ONLY on explicit signaling for accuracy
  */
 function monitorRemoteVideoTrack(track) {
     const overlay = document.getElementById('remoteVideoOffOverlay');
-    const videoElement = document.getElementById('remoteVideo');
 
     if (!overlay) {
         console.error('Video off overlay not found!');
         return;
     }
 
-    console.log('Monitoring remote video track');
+    console.log('Monitoring remote video track - using explicit signaling only');
 
+    // Only show overlay based on isRemoteVideoEnabled flag
+    // This is set by the video-status signal from remote peer
     function updateOverlay() {
-        // Explicit signaling takes precedence
         if (!isRemoteVideoEnabled) {
-            overlay.classList.add('visible');
-            return;
-        }
-
-        // Check multiple conditions for video being off as fallback
-        const trackDisabled = !track.enabled || track.muted || track.readyState !== 'live';
-        const videoNotPlaying = videoElement && (
-            videoElement.videoWidth === 0 ||
-            videoElement.videoHeight === 0 ||
-            videoElement.paused ||
-            videoElement.ended
-        );
-
-        const shouldShow = trackDisabled || videoNotPlaying;
-
-        if (shouldShow) {
             overlay.classList.add('visible');
         } else {
             overlay.classList.remove('visible');
         }
     }
 
-    // Initial check
+    // Initial state: video is enabled until told otherwise
     updateOverlay();
-
-    // Listen for track state changes
-    track.addEventListener('mute', () => {
-        console.log('Remote video muted');
-        overlay.classList.add('visible');
-    });
-
-    track.addEventListener('unmute', () => {
-        console.log('Remote video unmuted');
-        updateOverlay();
-    });
-
-    track.addEventListener('ended', () => {
-        console.log('Remote video track ended');
-        overlay.classList.add('visible');
-    });
-
-    // Also listen to video element events
-    if (videoElement) {
-        videoElement.addEventListener('pause', updateOverlay);
-        videoElement.addEventListener('play', updateOverlay);
-        videoElement.addEventListener('loadedmetadata', updateOverlay);
-    }
-
-    // Poll for state changes
-    setInterval(updateOverlay, 500);
 }
 
 /**
