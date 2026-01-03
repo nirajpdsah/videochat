@@ -525,14 +525,20 @@ async function checkForSignals() {
                         if (peerConnection) await handleIceCandidate(signal.signal_data);
                         break;
                     case 'video-status':
+                        console.log('Received video-status signal:', signal.signal_data);
                         isRemoteVideoEnabled = signal.signal_data.enabled;
                         const remoteOverlay = document.getElementById('remoteVideoOffOverlay');
+                        console.log('Remote overlay element:', remoteOverlay);
                         if (remoteOverlay) {
                             if (!isRemoteVideoEnabled) {
+                                console.log('Showing remote video-off overlay');
                                 remoteOverlay.classList.add('visible');
                             } else {
+                                console.log('Hiding remote video-off overlay');
                                 remoteOverlay.classList.remove('visible');
                             }
+                        } else {
+                            console.error('Remote overlay element not found!');
                         }
                         break;
                 }

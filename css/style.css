@@ -683,7 +683,9 @@ h6 {
     /* Show full video without stretching, works for both portrait and landscape */
     background: #000;
     /* Black background for letterboxing */
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
     z-index: 1;
 }
 
@@ -758,8 +760,8 @@ h6 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 10;
-    /* Higher than video (z-index: 1) and video-info (z-index: 10) */
+    z-index: 100;
+    /* Much higher than video to ensure it covers black stream */
     border-radius: inherit;
 }
 
