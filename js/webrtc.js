@@ -251,7 +251,12 @@ function createPeerConnection() {
             endCall();
         }
     };
-} Only shows overlay after call is fully connected
+}
+
+/**
+ * Monitor remote video track to show/hide avatar when video is off
+ * Now relies ONLY on explicit signaling for accuracy
+ * Only shows overlay after call is fully connected
  */
 function monitorRemoteVideoTrack(track) {
     const overlay = document.getElementById('remoteVideoOffOverlay');
@@ -264,12 +269,7 @@ function monitorRemoteVideoTrack(track) {
     console.log('Monitoring remote video track - using explicit signaling only');
     
     // Keep overlay hidden during connection phase
-    overlay.classList.remove('visible'y.classList.remove('visible');
-        }
-    }
-
-    // Initial state: video is enabled until told otherwise
-    updateOverlay();
+    overlay.classList.remove('visible');
 }
 
 /**
@@ -485,10 +485,6 @@ async function checkForSignals() {
                         isRemoteVideoEnabled = signal.signal_data.enabled;
                         const remoteOverlay = document.getElementById('remoteVideoOffOverlay');
                         console.log('Remote overlay element:', remoteOverlay);
-                        if (remoteOverlay) {
-                            if (!isRemoteVideoEnabled) {
-                                console.log('Showing remote video-off overlay');
-                                remoteOverlay.classList.add('visible');
                         console.log('Call connected status:', isCallConnected);
                         
                         // Only show/hide overlay if call is fully connected
@@ -501,7 +497,11 @@ async function checkForSignals() {
                                 remoteOverlay.classList.remove('visible');
                             }
                         } else if (!isCallConnected) {
-                            console.log('Call not connected yet, ignoring video-status signal');;
+                            console.log('Call not connected yet, ignoring video-status signal');
+                        } else {
+                            console.error('Remote overlay element not found!');
+                        }
+                        break;
                 }
             }
         }
