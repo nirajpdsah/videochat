@@ -38,7 +38,7 @@ if ($to_user_id == 0 || empty($signal_type) || empty($signal_data)) {
 }
 
 // Valid signal types
-$valid_types = ['offer', 'answer', 'ice-candidate', 'call-request', 'call-accepted', 'call-rejected', 'call-ended', 'receiver-ready'];
+$valid_types = ['offer', 'answer', 'ice-candidate', 'call-request', 'call-accepted', 'call-rejected', 'call-ended', 'receiver-ready', 'video-status'];
 if (!in_array($signal_type, $valid_types)) {
     error_log("send_signal.php invalid signal type: '$signal_type'");
     echo json_encode(['success' => false, 'message' => 'Invalid signal type: ' . $signal_type]);

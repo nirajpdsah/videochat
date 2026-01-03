@@ -587,23 +587,28 @@ function toggleAudio() {
  * Toggle video on/off
  */
 function toggleVideo() {
+    console.log('toggleVideo() called');
     if (localStream) {
         const videoTrack = localStream.getVideoTracks()[0];
         if (videoTrack) {
             isVideoEnabled = !isVideoEnabled;
             videoTrack.enabled = isVideoEnabled;
+            console.log('Video toggled. New state:', isVideoEnabled);
 
             // Update local overlay visibility
             const localOverlay = document.getElementById('localVideoOffOverlay');
             if (localOverlay) {
                 if (!isVideoEnabled) {
                     localOverlay.classList.add('visible');
+                    console.log('Local overlay shown');
                 } else {
                     localOverlay.classList.remove('visible');
+                    console.log('Local overlay hidden');
                 }
             }
 
             // Send signal to remote peer
+            console.log('Sending video-status signal to remote peer:', { enabled: isVideoEnabled, to: remoteUserId });
             sendSignal('video-status', { enabled: isVideoEnabled });
 
             const videoIcon = document.getElementById('videoIcon');
