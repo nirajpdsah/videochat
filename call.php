@@ -54,7 +54,7 @@ $update_stmt->execute();
         <!-- Remote Video (other person) -->
         <div id="remoteVideoContainer" class="video-container remote-video">
             <video id="remoteVideo" autoplay playsinline></video>
-            <div class="video-off-overlay visible" id="remoteVideoOffOverlay">
+            <div class="video-off-overlay" id="remoteVideoOffOverlay">
                 <img src="uploads/<?php echo !empty($remote_user['profile_picture']) ? $remote_user['profile_picture'] : 'default-avatar.png'; ?>" alt="Avatar" class="video-off-avatar">
                 <p class="video-off-text"><?php echo htmlspecialchars($remote_user['username']); ?></p>
                 <p class="video-off-subtext">Camera is off</p>
