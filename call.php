@@ -55,7 +55,7 @@ $update_stmt->execute();
         <div id="remoteVideoContainer" class="video-container remote-video">
             <video id="remoteVideo" autoplay playsinline></video>
             <div class="video-info">
-                <img src="uploads/<?php echo $remote_user['profile_picture']; ?>" alt="Avatar" class="call-avatar">
+                <img src="uploads/<?php echo !empty($remote_user['profile_picture']) ? $remote_user['profile_picture'] : 'default-avatar.png'; ?>" alt="Avatar" class="call-avatar">
                 <h3><?php echo htmlspecialchars($remote_user['username']); ?></h3>
                 <p id="callStatus">Connecting...</p>
             </div>

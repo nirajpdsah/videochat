@@ -64,7 +64,7 @@ function displayUsers() {
     users.forEach(user => {
         const statusClass = `status-${user.status}`;
         let statusText;
-        
+
         if (user.status === 'online') {
             statusText = 'Online';
         } else if (user.status === 'on_call') {
@@ -75,8 +75,8 @@ function displayUsers() {
         }
 
         html += `
-            <div class="user-item" data-user-id="${user.id}">
-                <img src="uploads/${user.profile_picture}" alt="${user.username}">
+            <div class="user-item" onclick="selectUser(${user.id})" data-user-id="${user.id}">
+                <img src="uploads/${user.profile_picture ? user.profile_picture : 'default-avatar.png'}" alt="${user.username}">
                 <div class="user-item-info">
                     <h4>${user.username}</h4>
                     <p>
@@ -84,26 +84,87 @@ function displayUsers() {
                         ${statusText}
                     </p>
                 </div>
-                <div class="user-actions">
-                    <button class="action-btn video" onclick="initiateCall(${user.id}, '${user.username}', 'video')" 
-                            ${user.status === 'on_call' ? 'disabled' : ''} title="Video Call">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M23 7l-7 5 7 5V7z"/>
-                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                        </svg>
-                    </button>
-                    <button class="action-btn audio" onclick="initiateCall(${user.id}, '${user.username}', 'audio')" 
-                            ${user.status === 'on_call' ? 'disabled' : ''} title="Audio Call">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                        </svg>
-                    </button>
-                </div>
             </div>
         `;
     });
 
     usersList.innerHTML = html;
+
+    // Re-highlight selected user if exists
+    if (selectedUserId) {
+        const selectedEl = document.querySelector(`.user-item[data-user-id="${selectedUserId}"]`);
+        if (selectedEl) selectedEl.classList.add('active');
+
+        // Also update status in the main view if it changed
+        const selectedUser = users.find(u => u.id === selectedUserId);
+        if (selectedUser) {
+            updateSelectedUserView(selectedUser);
+        }
+    }
+}
+
+function selectUser(userId) {
+    selectedUserId = userId;
+
+    // Update active class in list
+    document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
+    document.querySelector(`.user-item[data-user-id="${userId}"]`)?.classList.add('active');
+
+    // Find user data
+    const user = users.find(u => u.id === userId);
+    if (user) {
+        selectedUsername = user.username;
+        updateSelectedUserView(user);
+    }
+}
+
+function updateSelectedUserView(user) {
+    const emptyState = document.querySelector('.empty-state');
+    const profileView = document.getElementById('userProfileView');
+
+    if (emptyState) emptyState.style.display = 'none';
+    if (profileView) {
+        profileView.style.display = 'block';
+
+        // Update content
+        document.getElementById('selectedUserName').textContent = user.username;
+        document.getElementById('selectedUserAvatar').src = 'uploads/' + (user.profile_picture ? user.profile_picture : 'default-avatar.png');
+
+        // Status TEXT
+        let statusText = user.status === 'online' ? 'Online' :
+            (user.status === 'on_call' ? 'On a call' : 'Offline');
+        const statusBadge = document.getElementById('selectedUserStatus');
+        statusBadge.textContent = statusText;
+        statusBadge.style.color = user.status === 'online' ? '#34d399' :
+            (user.status === 'on_call' ? '#ef4444' : 'var(--text-muted)');
+        statusBadge.style.borderColor = user.status === 'online' ? 'rgba(52, 211, 153, 0.2)' : 'rgba(255,255,255,0.1)';
+
+        // Disable buttons if user is on call
+        const btns = document.querySelectorAll('.action-card');
+        btns.forEach(btn => {
+            if (user.status === 'on_call') {
+                btn.style.opacity = '0.5';
+                btn.style.pointerEvents = 'none';
+                btn.title = 'User is currently on a call';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+                btn.title = '';
+            }
+        });
+    }
+}
+
+function startVideoCall() {
+    if (selectedUserId && selectedUsername) {
+        initiateCall(selectedUserId, selectedUsername, 'video');
+    }
+}
+
+function startAudioCall() {
+    if (selectedUserId && selectedUsername) {
+        initiateCall(selectedUserId, selectedUsername, 'audio');
+    }
 }
 
 /**
@@ -188,13 +249,25 @@ async function initiateCall(userId, username, callType) {
 function showCallingModal(username, profilePic) {
     const modal = document.getElementById('callingModal');
     document.getElementById('callingModalName').textContent = username;
-    document.getElementById('callingModalAvatar').src = 'uploads/' + profilePic;
-    
+    document.getElementById('callingModalAvatar').src = 'uploads/' + (profilePic ? profilePic : 'default-avatar.png');
+
     // Clear any previous status message (like rejection messages)
     document.getElementById('callingModalStatus').textContent = '';
     document.getElementById('callingModalStatus').style.color = '#95a5a6';
-    
+
     modal.classList.add('active');
+
+    // Play outgoing ringback tone
+    const outgoingSound = document.getElementById('outgoingSound');
+    if (outgoingSound) {
+        outgoingSound.currentTime = 0;
+        const playPromise = outgoingSound.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(e => {
+                console.error('Audio play failed:', e);
+            });
+        }
+    }
 }
 
 /**
@@ -206,12 +279,16 @@ function cancelCall() {
         clearInterval(window.callAcceptanceInterval);
         window.callAcceptanceInterval = null;
     }
-    
+
     // Clear pending call
     window.pendingCall = null;
-    
+
+    document.getElementById('callingModal').classList.remove('active');
     document.getElementById('callingModal').classList.remove('active');
     updateUserStatus('online');
+
+    // Stop sound
+    stopRingTone();
 }
 
 /**
@@ -244,17 +321,17 @@ async function checkForCallAcceptance() {
         if (data.success && data.signals && data.signals.length > 0) {
             for (const signal of data.signals) {
                 console.log('Signal:', signal.signal_type, 'from:', signal.from_user_id, 'expecting from:', window.pendingCall.userId);
-                
+
                 // Check if receiver sent call-accepted signal
-                if (signal.signal_type === 'call-accepted' && 
+                if (signal.signal_type === 'call-accepted' &&
                     signal.from_user_id === window.pendingCall.userId) {
-                    
+
                     console.log('Call accepted! Redirecting to call page...');
-                    
+
                     // Stop checking immediately
                     clearInterval(window.callAcceptanceInterval);
                     window.callAcceptanceInterval = null;
-                    
+
                     // Delete the acceptance signal so receiver doesn't process it
                     fetch('api/delete_signal.php', {
                         method: 'POST',
@@ -264,25 +341,25 @@ async function checkForCallAcceptance() {
                             signal_type: 'call-accepted'
                         })
                     }).catch(e => console.error('Error deleting acceptance signal:', e));
-                    
+
                     // Close modal
                     document.getElementById('callingModal').classList.remove('active');
-                    
+
                     // Redirect to call page
                     window.location.href = `call.php?user_id=${window.pendingCall.userId}&type=${window.pendingCall.callType}&initiator=true`;
                     return;
                 }
-                
+
                 // Check if receiver rejected the call
-                if (signal.signal_type === 'call-rejected' && 
+                if (signal.signal_type === 'call-rejected' &&
                     signal.from_user_id === window.pendingCall.userId) {
-                    
+
                     console.log('Call rejected by receiver!');
-                    
+
                     // Stop checking immediately
                     clearInterval(window.callAcceptanceInterval);
                     window.callAcceptanceInterval = null;
-                    
+
                     // Delete the rejection signal
                     fetch('api/delete_signal.php', {
                         method: 'POST',
@@ -292,17 +369,22 @@ async function checkForCallAcceptance() {
                             signal_type: 'call-rejected'
                         })
                     }).catch(e => console.error('Error deleting rejection signal:', e));
-                    
+
                     // Show rejection message in modal
                     document.getElementById('callingModalStatus').textContent = 'Call Rejected from Other Side';
                     document.getElementById('callingModalStatus').style.color = '#e74c3c';
-                    
+
                     // Close modal after 2 seconds
                     setTimeout(() => {
                         document.getElementById('callingModal').classList.remove('active');
                         updateUserStatus('online');
                         window.pendingCall = null;
+                        updateUserStatus('online');
+                        window.pendingCall = null;
                     }, 2000);
+
+                    // Stop sound
+                    stopRingTone();
                     return;
                 }
             }
@@ -333,7 +415,7 @@ function closeBusyModal() {
  */
 function formatLastSeen(timestamp) {
     if (!timestamp) return 'Long time ago';
-    
+
     const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now - date;
@@ -346,7 +428,7 @@ function formatLastSeen(timestamp) {
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
-    
+
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
@@ -442,13 +524,22 @@ function showIncomingCallModal() {
     document.getElementById('callModalTitle').textContent =
         incomingCallData.call_type === 'video' ? 'Incoming Video Call' : 'Incoming Audio Call';
     document.getElementById('callModalName').textContent = incomingCallData.from_username;
-    document.getElementById('callModalAvatar').src = 'uploads/' + incomingCallData.from_profile_picture;
+    document.getElementById('callModalAvatar').src = 'uploads/' + (incomingCallData.from_profile_picture ? incomingCallData.from_profile_picture : 'default-avatar.png');
     modal.classList.add('active');
 
     console.log('Incoming call modal shown for:', incomingCallData.from_username);
 
-    // Play notification sound (optional)
-    // You can add a sound file and play it here
+    // Play incoming ringtone
+    const incomingSound = document.getElementById('incomingSound');
+    if (incomingSound) {
+        incomingSound.currentTime = 0;
+        const playPromise = incomingSound.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(e => {
+                console.error('Audio play failed:', e);
+            });
+        }
+    }
 }
 
 /**
@@ -471,18 +562,18 @@ async function acceptCall() {
             signal_data: { accepted: true },
             call_type: incomingCallData.call_type
         };
-        
+
         console.log('Signal payload:', signalPayload);
-        
+
         const response = await fetch('api/send_signal.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(signalPayload)
         });
-        
+
         const result = await response.json();
         console.log('Call acceptance signal sent, response:', result);
-        
+
         if (!result.success) {
             console.error('Failed to send acceptance signal:', result.message);
             alert('Failed to send acceptance signal: ' + result.message);
@@ -515,6 +606,9 @@ async function acceptCall() {
     // Close modal
     document.getElementById('callModal').classList.remove('active');
 
+    // Stop sound
+    stopRingTone();
+
     console.log('=== ACCEPTANCE COMPLETE, REDIRECTING IMMEDIATELY ===');
 
     // Redirect to call page as receiver (not initiator) - NO DELAY
@@ -537,15 +631,15 @@ async function rejectCall() {
             signal_data: { rejected: true },
             call_type: incomingCallData.call_type
         };
-        
+
         console.log('Sending rejection signal:', signalPayload);
-        
+
         const response = await fetch('api/send_signal.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(signalPayload)
         });
-        
+
         const result = await response.json();
         console.log('Call rejection signal sent, response:', result);
     } catch (error) {
@@ -570,5 +664,29 @@ async function rejectCall() {
     document.getElementById('callModal').classList.remove('active');
 
     // Clear the call data
+    // Clear the call data
     incomingCallData = null;
+
+    // Stop sound
+    stopRingTone();
 }
+
+/**
+ * Stop all ringtones
+ */
+function stopRingTone() {
+    const incomingSound = document.getElementById('incomingSound');
+    const outgoingSound = document.getElementById('outgoingSound');
+
+    if (incomingSound) {
+        incomingSound.pause();
+        incomingSound.currentTime = 0;
+    }
+
+    if (outgoingSound) {
+        outgoingSound.pause();
+        outgoingSound.currentTime = 0;
+    }
+}
+
+

@@ -80,12 +80,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Wartalaap</title>
+    <link rel="icon" type="image/png" href="uploads/logo.png">
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-box">
-            <h2>Join Wartalaap</h2>
+            <h2>Join <span class="hindi-stylized">वार्ता</span>Laap</h2>
             
             <?php if ($error): ?>
                 <div class="alert error"><?php echo $error; ?></div>

@@ -20,6 +20,7 @@ $current_user = getCurrentUser();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Wartalaap</title>
+    <link rel="icon" type="image/png" href="uploads/logo.png">
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
@@ -27,11 +28,11 @@ $current_user = getCurrentUser();
         <!-- Header -->
         <header class="dashboard-header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="uploads/logo.png" alt="Wartalaap" style="width: 32px; height: 32px;">
-                <h1 style="margin: 0; font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Wartalaap</h1>
+                <img src="uploads/logo.png" alt="Wartalaap">
+                <h1><span class="hindi-stylized">वार्ता</span>Laap</h1>
             </div>
             <div class="user-info">
-                <img src="uploads/<?php echo $current_user['profile_picture']; ?>" alt="Profile" class="profile-pic-small">
+                <img src="uploads/<?php echo !empty($current_user['profile_picture']) ? $current_user['profile_picture'] : 'default-avatar.png'; ?>" alt="Profile" class="profile-pic-small">
                 <h3><?php echo htmlspecialchars($current_user['username']); ?></h3>
             </div>
             <a href="logout.php" class="btn btn-secondary">Logout</a>
@@ -45,6 +46,40 @@ $current_user = getCurrentUser();
                 <div id="usersList" class="users-list">
                     <!-- Users will be loaded here via JavaScript -->
                     <div class="loading">Loading users...</div>
+                </div>
+            </div>
+            
+            <!-- Right Side: User Profile / Call Actions -->
+            <div class="chat-area" id="chatArea">
+                <div class="empty-state">
+                    <img src="uploads/logo.png" alt="Wartalaap" style="opacity: 0.5;">
+                    <h2>Wartalaap Web</h2>
+                    <p>Select a contact to view profile and start a call.</p>
+                </div>
+                
+                <!-- Active User View (Hidden by default) -->
+                <div class="user-profile-view" id="userProfileView" style="display: none;">
+                    <img id="selectedUserAvatar" src="" alt="Profile" class="profile-pic-jumbo">
+                    <h2 id="selectedUserName"></h2>
+                    <p id="selectedUserStatus" class="status-badge"></p>
+                    
+                    <div class="profile-actions">
+                        <button onclick="startVideoCall()" class="action-card video">
+                            <div class="icon-circle">
+                                <svg viewBox="0 0 24 24" fill="none" class="feather"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            </div>
+                            <span>Video Call</span>
+                        </button>
+                        
+                        <button onclick="startAudioCall()" class="action-card audio">
+                            <div class="icon-circle">
+                                <svg viewBox="0 0 24 24" fill="none" class="feather"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            </div>
+                            <span>Audio Call</span>
+                        </button>
+                    </div>
+                    
+
                 </div>
             </div>
         </div>
@@ -82,6 +117,10 @@ $current_user = getCurrentUser();
             <button onclick="closeBusyModal()" class="btn btn-primary">OK</button>
         </div>
     </div>
+
+    <!-- Audio Elements for Call Sounds -->
+    <audio id="incomingSound" src="sounds/ringtone.mp3" loop preload="auto"></audio>
+    <audio id="outgoingSound" src="sounds/ringback.mp3" loop preload="auto"></audio>
 
     <script>
         const currentUserId = <?php echo $current_user['id']; ?>;
