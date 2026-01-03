@@ -18,6 +18,7 @@ let signalingInterval = null;
 let isAudioEnabled = true;
 let isVideoEnabled = true;
 let isRemoteVideoEnabled = true; // Track remote peer's video state via signaling
+let isCallConnected = false; // Track if WebRTC connection is established
 let pendingIceCandidates = []; // Queue ICE candidates until offer/answer is set
 
 // Debug logger: logs to console only
@@ -240,16 +241,17 @@ function createPeerConnection() {
         console.log('Connection state:', peerConnection.connectionState);
         updateCallStatus(peerConnection.connectionState);
 
+        if (peerConnection.connectionState === 'connected') {
+            isCallConnected = true;
+            console.log('Call fully connected - video overlays now active');
+        }
+
         if (peerConnection.connectionState === 'disconnected' ||
             peerConnection.connectionState === 'failed') {
             endCall();
         }
     };
-}
-
-/**
- * Monitor remote video track to show/hide avatar when video is off
- * Now relies ONLY on explicit signaling for accuracy
+} Only shows overlay after call is fully connected
  */
 function monitorRemoteVideoTrack(track) {
     const overlay = document.getElementById('remoteVideoOffOverlay');
@@ -260,14 +262,9 @@ function monitorRemoteVideoTrack(track) {
     }
 
     console.log('Monitoring remote video track - using explicit signaling only');
-
-    // Only show overlay based on isRemoteVideoEnabled flag
-    // This is set by the video-status signal from remote peer
-    function updateOverlay() {
-        if (!isRemoteVideoEnabled) {
-            overlay.classList.add('visible');
-        } else {
-            overlay.classList.remove('visible');
+    
+    // Keep overlay hidden during connection phase
+    overlay.classList.remove('visible'y.classList.remove('visible');
         }
     }
 
@@ -492,14 +489,19 @@ async function checkForSignals() {
                             if (!isRemoteVideoEnabled) {
                                 console.log('Showing remote video-off overlay');
                                 remoteOverlay.classList.add('visible');
+                        console.log('Call connected status:', isCallConnected);
+                        
+                        // Only show/hide overlay if call is fully connected
+                        if (remoteOverlay && isCallConnected) {
+                            if (!isRemoteVideoEnabled) {
+                                console.log('Showing remote video-off overlay');
+                                remoteOverlay.classList.add('visible');
                             } else {
                                 console.log('Hiding remote video-off overlay');
                                 remoteOverlay.classList.remove('visible');
                             }
-                        } else {
-                            console.error('Remote overlay element not found!');
-                        }
-                        break;
+                        } else if (!isCallConnected) {
+                            console.log('Call not connected yet, ignoring video-status signal');;
                 }
             }
         }
