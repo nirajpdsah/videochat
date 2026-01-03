@@ -54,6 +54,11 @@ $update_stmt->execute();
         <!-- Remote Video (other person) -->
         <div id="remoteVideoContainer" class="video-container remote-video">
             <video id="remoteVideo" autoplay playsinline></video>
+            <div class="video-off-overlay visible" id="remoteVideoOffOverlay">
+                <img src="uploads/<?php echo !empty($remote_user['profile_picture']) ? $remote_user['profile_picture'] : 'default-avatar.png'; ?>" alt="Avatar" class="video-off-avatar">
+                <p class="video-off-text"><?php echo htmlspecialchars($remote_user['username']); ?></p>
+                <p class="video-off-subtext">Camera is off</p>
+            </div>
             <div class="video-info">
                 <img src="uploads/<?php echo !empty($remote_user['profile_picture']) ? $remote_user['profile_picture'] : 'default-avatar.png'; ?>" alt="Avatar" class="call-avatar">
                 <h3><?php echo htmlspecialchars($remote_user['username']); ?></h3>
@@ -64,6 +69,9 @@ $update_stmt->execute();
         <!-- Local Video (you) -->
         <div id="localVideoContainer" class="video-container local-video">
             <video id="localVideo" autoplay muted playsinline></video>
+            <div class="video-off-overlay" id="localVideoOffOverlay">
+                <img src="uploads/<?php echo !empty($current_user['profile_picture']) ? $current_user['profile_picture'] : 'default-avatar.png'; ?>" alt="Avatar" class="video-off-avatar local">
+            </div>
             <p>You</p>
         </div>
 

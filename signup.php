@@ -66,7 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $insert_stmt->bind_param("ssss", $username, $email, $hashed_password, $profile_picture);
             
             if ($insert_stmt->execute()) {
-                $success = "Registration successful! You can now login.";
+                $success = "Registration successful! Redirecting to login...";
+                header("refresh:2;url=login.php");
             } else {
                 $error = "Registration failed. Please try again.";
             }

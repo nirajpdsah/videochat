@@ -17,6 +17,7 @@ let peerConnection = null;
 let signalingInterval = null;
 let isAudioEnabled = true;
 let isVideoEnabled = true;
+let isRemoteVideoEnabled = true; // Track remote peer's video state via signaling
 let pendingIceCandidates = []; // Queue ICE candidates until offer/answer is set
 
 // Debug logger: logs to console only
@@ -72,7 +73,48 @@ document.addEventListener('DOMContentLoaded', async function () {
         console.error('[INIT ERROR]', error);
         alert('Initialization error: ' + error.message);
     }
+
+    // Setup auto-hide controls and cursor (YouTube-style)
+    setupAutoHideControls();
 });
+
+/**
+ * Setup auto-hide for controls and cursor after inactivity
+ */
+function setupAutoHideControls() {
+    const callContainer = document.querySelector('.call-container');
+    if (!callContainer) return;
+
+    let inactivityTimer;
+    const INACTIVITY_DELAY = 3000; // 3 seconds
+
+    // Show controls and cursor
+    function showControls() {
+        callContainer.classList.add('active');
+        callContainer.classList.remove('inactive');
+    }
+
+    // Hide controls and cursor
+    function hideControls() {
+        callContainer.classList.remove('active');
+        callContainer.classList.add('inactive');
+    }
+
+    // Reset timer on mouse movement
+    function resetTimer() {
+        showControls();
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(hideControls, INACTIVITY_DELAY);
+    }
+
+    // Listen for mouse movement
+    callContainer.addEventListener('mousemove', resetTimer);
+    callContainer.addEventListener('mouseenter', resetTimer);
+
+    // Start with controls visible, then hide after delay
+    showControls();
+    inactivityTimer = setTimeout(hideControls, INACTIVITY_DELAY);
+}
 
 /**
  * Setup media (camera/microphone) without creating peer connection yet
@@ -168,6 +210,11 @@ function createPeerConnection() {
         }
         remoteStream.addTrack(event.track);
 
+        // Monitor video track state for avatar display
+        if (event.track.kind === 'video') {
+            monitorRemoteVideoTrack(event.track);
+        }
+
         // Hide video info overlay when remote video actually starts playing
         const remoteVideo = document.getElementById('remoteVideo');
         remoteVideo.onloadedmetadata = () => {
@@ -198,6 +245,75 @@ function createPeerConnection() {
             endCall();
         }
     };
+}
+
+/**
+ * Monitor remote video track to show/hide avatar when video is off
+ */
+function monitorRemoteVideoTrack(track) {
+    const overlay = document.getElementById('remoteVideoOffOverlay');
+    const videoElement = document.getElementById('remoteVideo');
+
+    if (!overlay) {
+        console.error('Video off overlay not found!');
+        return;
+    }
+
+    console.log('Monitoring remote video track');
+
+    function updateOverlay() {
+        // Explicit signaling takes precedence
+        if (!isRemoteVideoEnabled) {
+            overlay.classList.add('visible');
+            return;
+        }
+
+        // Check multiple conditions for video being off as fallback
+        const trackDisabled = !track.enabled || track.muted || track.readyState !== 'live';
+        const videoNotPlaying = videoElement && (
+            videoElement.videoWidth === 0 ||
+            videoElement.videoHeight === 0 ||
+            videoElement.paused ||
+            videoElement.ended
+        );
+
+        const shouldShow = trackDisabled || videoNotPlaying;
+
+        if (shouldShow) {
+            overlay.classList.add('visible');
+        } else {
+            overlay.classList.remove('visible');
+        }
+    }
+
+    // Initial check
+    updateOverlay();
+
+    // Listen for track state changes
+    track.addEventListener('mute', () => {
+        console.log('Remote video muted');
+        overlay.classList.add('visible');
+    });
+
+    track.addEventListener('unmute', () => {
+        console.log('Remote video unmuted');
+        updateOverlay();
+    });
+
+    track.addEventListener('ended', () => {
+        console.log('Remote video track ended');
+        overlay.classList.add('visible');
+    });
+
+    // Also listen to video element events
+    if (videoElement) {
+        videoElement.addEventListener('pause', updateOverlay);
+        videoElement.addEventListener('play', updateOverlay);
+        videoElement.addEventListener('loadedmetadata', updateOverlay);
+    }
+
+    // Poll for state changes
+    setInterval(updateOverlay, 500);
 }
 
 /**
@@ -408,6 +524,17 @@ async function checkForSignals() {
                     case 'ice-candidate':
                         if (peerConnection) await handleIceCandidate(signal.signal_data);
                         break;
+                    case 'video-status':
+                        isRemoteVideoEnabled = signal.signal_data.enabled;
+                        const remoteOverlay = document.getElementById('remoteVideoOffOverlay');
+                        if (remoteOverlay) {
+                            if (!isRemoteVideoEnabled) {
+                                remoteOverlay.classList.add('visible');
+                            } else {
+                                remoteOverlay.classList.remove('visible');
+                            }
+                        }
+                        break;
                 }
             }
         }
@@ -459,6 +586,19 @@ function toggleVideo() {
         if (videoTrack) {
             isVideoEnabled = !isVideoEnabled;
             videoTrack.enabled = isVideoEnabled;
+
+            // Update local overlay visibility
+            const localOverlay = document.getElementById('localVideoOffOverlay');
+            if (localOverlay) {
+                if (!isVideoEnabled) {
+                    localOverlay.classList.add('visible');
+                } else {
+                    localOverlay.classList.remove('visible');
+                }
+            }
+
+            // Send signal to remote peer
+            sendSignal('video-status', { enabled: isVideoEnabled });
 
             const videoIcon = document.getElementById('videoIcon');
             videoIcon.innerHTML = isVideoEnabled ? `

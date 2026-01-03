@@ -416,7 +416,11 @@ function closeBusyModal() {
 function formatLastSeen(timestamp) {
     if (!timestamp) return 'Long time ago';
 
-    const date = new Date(timestamp);
+    // Parse the timestamp - replace space with 'T' to ensure it's treated as local time
+    // Server sends: "2023-01-03 12:00:00" (Nepal time)
+    // We need to parse it as local time, not UTC
+    const timestampStr = timestamp.replace(' ', 'T');
+    const date = new Date(timestampStr);
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
