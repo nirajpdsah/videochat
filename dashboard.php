@@ -19,9 +19,13 @@ $current_user = getCurrentUser();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Dashboard - Wartalaap</title>
     <link rel="icon" type="image/png" href="uploads/logo.png">
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+    <script src="js/cache-buster.js?v=<?php echo time(); ?>"></script>
 </head>
 <body>
     <div class="dashboard-container">

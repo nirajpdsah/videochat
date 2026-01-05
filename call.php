@@ -46,8 +46,12 @@ $update_stmt->execute();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title><?php echo $call_type == 'video' ? 'Video' : 'Voice'; ?> Call - Wartalaap</title>
     <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+    <script src="js/cache-buster.js?v=<?php echo time(); ?>"></script>
 </head>
 <body class="call-body">
     <div class="call-container">
@@ -132,6 +136,31 @@ $update_stmt->execute();
         const remoteUserId = <?php echo $remote_user_id; ?>;
         const callType = '<?php echo $call_type; ?>';
         const isInitiator = <?php echo $is_initiator ? 'true' : 'false'; ?>;
+        
+        // Feature detection - check if WebRTC APIs are available
+        (function() {
+            const errors = [];
+            
+            // Check for HTTPS (required for getUserMedia except on localhost)
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                errors.push('This page must be served over HTTPS for camera/microphone access.');
+            }
+            
+            // Check for getUserMedia support
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                errors.push('Your browser does not support camera/microphone access. Please use Chrome, Firefox, Edge, or Safari.');
+            }
+            
+            // Check for RTCPeerConnection support
+            if (!window.RTCPeerConnection) {
+                errors.push('Your browser does not support WebRTC video calls.');
+            }
+            
+            if (errors.length > 0) {
+                alert('Cannot start call:\n\n' + errors.join('\n\n') + '\n\nPlease check your browser and connection.');
+                window.location.href = 'dashboard.php';
+            }
+        })();
     </script>
     <script src="js/webrtc.js?v=<?php echo time(); ?>"></script>
 </body>

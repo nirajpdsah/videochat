@@ -2,8 +2,12 @@
 RewriteEngine On
 
 # Force HTTPS (required for WebRTC)
-RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# IMPORTANT: Uncomment the lines below ONLY if you have SSL certificate installed
+# For local development (localhost), leave commented - getUserMedia works on localhost without HTTPS
+# RewriteCond %{HTTPS} off
+# RewriteCond %{HTTP_HOST} !^localhost$ [NC]
+# RewriteCond %{HTTP_HOST} !^127\.0\.0\.1$ [NC]
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Set default index file
 DirectoryIndex index.php
@@ -36,8 +40,9 @@ Options -Indexes
 # Cache static assets on the edge
 <IfModule mod_expires.c>
     ExpiresActive On
-    ExpiresByType text/css "access plus 7 days"
-    ExpiresByType application/javascript "access plus 7 days"
+    # Don't cache JS and CSS during development to prevent caching issues
+    ExpiresByType text/css "access plus 0 seconds"
+    ExpiresByType application/javascript "access plus 0 seconds"
     ExpiresByType image/png "access plus 7 days"
     ExpiresByType image/jpeg "access plus 7 days"
     ExpiresByType image/gif "access plus 7 days"
@@ -47,4 +52,20 @@ Options -Indexes
     ExpiresByType font/woff "access plus 7 days"
     ExpiresByType font/woff2 "access plus 7 days"
     ExpiresByType font/ttf "access plus 7 days"
+</IfModule>
+
+# Prevent caching of HTML and PHP files
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|htm|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, private"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+    
+    # Also prevent caching of JS/CSS during development
+    <FilesMatch "\.(js|css)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, private"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
 </IfModule>

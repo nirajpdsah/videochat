@@ -21,6 +21,12 @@ let isRemoteVideoEnabled = true; // Track remote peer's video state via signalin
 let isRemoteAudioEnabled = true; // Track remote peer's audio state via signaling
 let isCallConnected = false; // Track if WebRTC connection is established
 let pendingIceCandidates = []; // Queue ICE candidates until offer/answer is set
+let connectionRetryCount = 0;
+let maxConnectionRetries = 3;
+let signalingRetryDelay = 1000; // Start with 1 second
+let connectionTimeout = null;
+let hasMediaPermissions = false;
+let audioOnlyMode = false; // Fallback when video permission denied
 
 // Debug logger: logs to console only
 function logEvent(event, payload = {}) {
@@ -124,37 +130,121 @@ function setupAutoHideControls() {
 async function setupMediaOnly() {
     try {
         logEvent('media_request_start');
-        // Get user media (camera/microphone)
-        const constraints = {
-            audio: true,
-            video: callType === 'video' ? { width: 1280, height: 720 } : false
-        };
-
-        localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        logEvent('media_granted');
-
-        // Display local video
-        const localVideo = document.getElementById('localVideo');
-        localVideo.srcObject = localStream;
-
-        // Hide video info overlay once stream starts
+        
+        // Check if mediaDevices API is available (critical safety check)
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('Camera/microphone access is not supported in your browser or requires HTTPS. Please ensure you are using a modern browser over HTTPS.');
+        }
+        
+        // Try full video/audio first for video calls
         if (callType === 'video') {
-            localStream.getVideoTracks()[0].onended = function () {
-                console.log('Video track ended');
-            };
+            try {
+                const constraints = {
+                    audio: true,
+                    video: { width: 1280, height: 720 }
+                };
+                
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                logEvent('media_granted', { type: 'video_audio' });
+                hasMediaPermissions = true;
+                
+            } catch (videoError) {
+                console.warn('Video permission denied or failed:', videoError.name);
+                
+                // If video permission denied, try audio-only fallback
+                if (videoError.name === 'NotAllowedError' || videoError.name === 'NotFoundError' || videoError.name === 'NotReadableError') {
+                    console.log('Falling back to audio-only mode...');
+                    updateCallStatus('Camera unavailable - Audio only');
+                    
+                    try {
+                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                        audioOnlyMode = true;
+                        hasMediaPermissions = true;
+                        logEvent('media_granted', { type: 'audio_only', reason: videoError.name });
+                        
+                        // Show user notification
+                        showNotification('Camera unavailable. Continuing with audio only.', 'warning');
+                        
+                        // Hide local video overlay since we have no video
+                        const localVideoContainer = document.getElementById('localVideoContainer');
+                        if (localVideoContainer) {
+                            localVideoContainer.style.display = 'none';
+                        }
+                    } catch (audioError) {
+                        throw audioError; // Re-throw if audio also fails
+                    }
+                } else {
+                    throw videoError; // Re-throw for other errors
+                }
+            }
+        } else {
+            // Audio-only call
+            const constraints = { audio: true, video: false };
+            localStream = await navigator.mediaDevices.getUserMedia(constraints);
+            logEvent('media_granted', { type: 'audio_only' });
+            hasMediaPermissions = true;
+        }
+
+        // Display local video (if we have video stream)
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo && localStream) {
+            localVideo.srcObject = localStream;
+        }
+
+        // Monitor track ended events
+        if (localStream) {
+            localStream.getTracks().forEach(track => {
+                track.onended = function () {
+                    console.log(`${track.kind} track ended`);
+                    showNotification(`${track.kind === 'video' ? 'Camera' : 'Microphone'} disconnected`, 'error');
+                };
+            });
         }
 
         logEvent('media_setup_complete');
+        
     } catch (error) {
         logEvent('media_error', { name: error?.name });
-        // Log detailed media error info to help diagnose (e.g., NotAllowedError, NotFoundError, NotReadableError)
         console.error('Error accessing media:', {
             name: error?.name,
-            message: error?.message,
-            constraints
+            message: error?.message
         });
-        alert(`Could not access camera/microphone (${error?.name || 'unknown'}): ${error?.message || ''}`);
-        endCall();
+        
+        hasMediaPermissions = false;
+        
+        // Handle different error types with appropriate messages
+        let errorMessage = '';
+        let showTroubleshootLink = false;
+        
+        if (error.name === 'NotAllowedError') {
+            errorMessage = 'Camera and microphone permissions were denied. Please allow access and try again.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage = 'No camera or microphone found. Please connect a device and try again.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage = 'Camera or microphone is already in use by another application.';
+        } else if (error.name === 'OverconstrainedError') {
+            errorMessage = 'Camera settings are not supported. Please check your camera.';
+        } else if (error.message && error.message.includes('getUserMedia')) {
+            errorMessage = `Could not access media devices: ${error.message}`;
+            showTroubleshootLink = true;
+        } else {
+            errorMessage = `Could not access media devices: ${error.message || error.name}`;
+            showTroubleshootLink = true;
+        }
+        
+        // Add troubleshooting link for technical errors
+        if (showTroubleshootLink) {
+            errorMessage += '\n\nThis might be a caching issue. Try:\n1. Press Ctrl+F5 to hard refresh\n2. Clear your browser cache\n3. Visit troubleshoot.php for more help';
+        }
+        
+        alert(errorMessage);
+        
+        // Redirect to troubleshoot page for getUserMedia errors
+        if (showTroubleshootLink && confirm('Would you like to see detailed troubleshooting steps?')) {
+            window.location.href = 'troubleshoot.php';
+        } else {
+            endCall();
+        }
     }
 }
 
@@ -232,7 +322,7 @@ function createPeerConnection() {
     peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
             console.log('Sending ICE candidate');
-            sendSignal('ice-candidate', event.candidate);
+            sendSignalWithRetry('ice-candidate', event.candidate);
             logEvent('ice_sent', { candidate: event.candidate });
         }
     };
@@ -244,14 +334,44 @@ function createPeerConnection() {
 
         if (peerConnection.connectionState === 'connected') {
             isCallConnected = true;
+            connectionRetryCount = 0; // Reset retry count on success
+            if (connectionTimeout) {
+                clearTimeout(connectionTimeout);
+                connectionTimeout = null;
+            }
             console.log('Call fully connected - video overlays now active');
+            showNotification('Call connected', 'success');
         }
 
-        if (peerConnection.connectionState === 'disconnected' ||
-            peerConnection.connectionState === 'failed') {
-            endCall();
+        if (peerConnection.connectionState === 'disconnected') {
+            console.warn('Connection disconnected, attempting to reconnect...');
+            updateCallStatus('Connection lost, reconnecting...');
+            showNotification('Connection lost, trying to reconnect...', 'warning');
+            attemptReconnection();
+        }
+        
+        if (peerConnection.connectionState === 'failed') {
+            console.error('Connection failed');
+            if (connectionRetryCount < maxConnectionRetries) {
+                updateCallStatus('Connection failed, retrying...');
+                showNotification(`Connection failed, retrying (${connectionRetryCount + 1}/${maxConnectionRetries})...`, 'warning');
+                attemptReconnection();
+            } else {
+                updateCallStatus('Connection failed');
+                showNotification('Connection failed. Please check your internet connection.', 'error');
+                setTimeout(() => endCall(), 3000);
+            }
         }
     };
+    
+    // Set connection timeout (30 seconds)
+    connectionTimeout = setTimeout(() => {
+        if (!isCallConnected && peerConnection && peerConnection.connectionState !== 'connected') {
+            console.error('Connection timeout');
+            showNotification('Connection timeout. Please check your internet connection.', 'error');
+            endCall();
+        }
+    }, 30000);
 }
 
 /**
@@ -363,6 +483,9 @@ async function handleIceCandidate(candidate) {
  */
 async function sendSignal(signalType, signalData) {
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const response = await fetch('api/send_signal.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -371,8 +494,11 @@ async function sendSignal(signalType, signalData) {
                 signal_type: signalType,
                 signal_data: signalData,
                 call_type: callType
-            })
+            }),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
 
         const data = await response.json();
         if (!data.success) {
@@ -383,6 +509,36 @@ async function sendSignal(signalType, signalData) {
     } catch (error) {
         console.error('Error sending signal:', error);
         logEvent('sendSignal_error', { signalType, to: remoteUserId, error: error?.message });
+        
+        if (error.name === 'AbortError') {
+            console.warn('Signal request timeout');
+        }
+    }
+}
+
+/**
+ * Send signal with retry logic for critical signals
+ */
+async function sendSignalWithRetry(signalType, signalData, maxRetries = 3) {
+    let retries = 0;
+    let delay = signalingRetryDelay;
+    
+    while (retries < maxRetries) {
+        try {
+            await sendSignal(signalType, signalData);
+            return; // Success
+        } catch (error) {
+            retries++;
+            console.warn(`Signal send failed (attempt ${retries}/${maxRetries}), retrying in ${delay}ms...`);
+            
+            if (retries < maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2; // Exponential backoff
+            } else {
+                console.error('Signal send failed after all retries');
+                throw error;
+            }
+        }
     }
 }
 
@@ -393,7 +549,14 @@ let callStarted = false;
 
 async function checkForSignals() {
     try {
-        const response = await fetch('api/get_signals.php');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
+        const response = await fetch('api/get_signals.php', {
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
 
         // Check if response is OK
         if (!response.ok) {
@@ -787,6 +950,75 @@ window.addEventListener('beforeunload', function () {
         peerConnection.close();
     }
 });
+
+/**
+ * Attempt to reconnect after connection loss
+ */
+async function attemptReconnection() {
+    if (connectionRetryCount >= maxConnectionRetries) {
+        console.error('Max reconnection attempts reached');
+        return;
+    }
+    
+    connectionRetryCount++;
+    console.log(`Reconnection attempt ${connectionRetryCount}/${maxConnectionRetries}`);
+    
+    // Close existing peer connection
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+    
+    // Wait before retrying (exponential backoff)
+    const delay = Math.min(1000 * Math.pow(2, connectionRetryCount - 1), 10000);
+    await new Promise(resolve => setTimeout(resolve, delay));
+    
+    // Try to reconnect
+    try {
+        if (isInitiator) {
+            await startCall();
+        } else {
+            createPeerConnection();
+        }
+    } catch (error) {
+        console.error('Reconnection failed:', error);
+        if (connectionRetryCount < maxConnectionRetries) {
+            attemptReconnection();
+        }
+    }
+}
+
+/**
+ * Show notification to user
+ */
+function showNotification(message, type = 'info') {
+    // Remove existing notification
+    const existingNotification = document.querySelector('.call-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `call-notification call-notification-${type}`;
+    notification.textContent = message;
+    
+    // Add to DOM
+    const callContainer = document.querySelector('.call-container');
+    if (callContainer) {
+        callContainer.appendChild(notification);
+        
+        // Auto-remove after 5 seconds (unless it's an error)
+        if (type !== 'error') {
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 5000);
+        }
+    }
+}
 
 /**
  * Make an element draggable

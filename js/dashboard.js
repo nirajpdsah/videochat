@@ -34,7 +34,15 @@ document.addEventListener('DOMContentLoaded', function () {
  */
 async function loadUsers() {
     try {
-        const response = await fetch('api/get_users.php');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
+        const response = await fetch('api/get_users.php', {
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
         const data = await response.json();
 
         if (data.success) {
@@ -46,6 +54,10 @@ async function loadUsers() {
         }
     } catch (error) {
         console.error('Error loading users:', error);
+        // Don't show error to user for background polling, just log it
+        if (error.name === 'AbortError') {
+            console.warn('User list request timeout');
+        }
     }
 }
 
@@ -195,14 +207,20 @@ async function initiateCall(userId, username, callType) {
 
     // Send call request to the other user
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const response = await fetch('api/send_call_request.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 to_user_id: userId,
                 call_type: callType
-            })
+            }),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
 
         const data = await response.json();
 
@@ -217,8 +235,12 @@ async function initiateCall(userId, username, callType) {
         }
     } catch (error) {
         console.error('Error sending call request:', error);
-        console.error('Error details:', error.message);
-        alert('Failed to send call request. Please check console for details and ensure the database is updated.');
+        
+        if (error.name === 'AbortError') {
+            alert('Call request timeout. Please check your internet connection and try again.');
+        } else {
+            alert('Failed to send call request. Please check your internet connection and try again.');
+        }
         return;
     }
 
@@ -469,7 +491,14 @@ async function checkForIncomingCalls() {
     if (callModalShown) return;
 
     try {
-        const response = await fetch('api/get_signals.php');
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
+        const response = await fetch('api/get_signals.php', {
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             console.error('Failed to fetch signals:', response.status);
@@ -509,7 +538,12 @@ async function checkForIncomingCalls() {
             }
         }
     } catch (error) {
-        console.error('Error checking for incoming calls:', error);
+        // Silently handle errors for background polling
+        if (error.name === 'AbortError') {
+            console.warn('Incoming call check timeout');
+        } else {
+            console.error('Error checking for incoming calls:', error);
+        }
     }
 }
 
