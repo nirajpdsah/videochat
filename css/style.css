@@ -1,1273 +1,2148 @@
-/* Google Fonts Import */
+/* ===================================
+   GOOGLE FONTS IMPORT
+   =================================== */
+/* This line brings in custom fonts from Google Fonts library */
+/* Inter: A clean, modern font used for regular text */
+/* Outfit: A bold, stylish font used for headings */
+/* The numbers (400, 500, etc.) are font weights (thickness) */
+/* display=swap means text shows immediately using backup fonts while custom fonts load */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap');
 
-/* Reset and Base Styles */
+/* ===================================
+   RESET AND BASE STYLES
+   =================================== */
+/* The * selector means "apply to EVERYTHING on the page" */
 * {
+    /* Remove all default margins (space outside elements) */
     margin: 0;
+    /* Remove all default padding (space inside elements) */
     padding: 0;
+    /* box-sizing: border-box makes width/height calculations easier */
+    /* It includes padding and border in the total width, not added on top */
     box-sizing: border-box;
 }
 
+/* ===================================
+   CSS CUSTOM PROPERTIES (VARIABLES)
+   =================================== */
+/* :root is a special selector that targets the entire document */
+/* Variables defined here can be used anywhere with var(--variable-name) */
+/* This makes it easy to change colors/values in one place */
 :root {
-    /* Modern Palette */
+    /* ===== COLOR PALETTE ===== */
+    /* Primary: Main brand color - purple shade */
     --primary: #8b5cf6;
+    /* Primary Dark: Darker version of main color for hover effects */
     --primary-dark: #7c3aed;
+    /* Primary Light: Lighter version of main color for highlights */
     --primary-light: #a78bfa;
+    /* Secondary: Accent color - pink shade for variety */
     --secondary: #ec4899;
-    /* Pinkish accent */
+    /* Accent: Another accent color - cyan/blue for contrast */
     --accent: #06b6d4;
-    /* Cyan accent */
 
+    /* ===== STATUS COLORS ===== */
+    /* Success: Green color for positive actions (online, success messages) */
     --success: #10b981;
+    /* Danger: Red color for warnings/errors (end call, delete) */
     --danger: #ef4444;
+    /* Warning: Orange color for caution (busy status) */
     --warning: #f59e0b;
 
-    /* Dark Theme Base */
+    /* ===== DARK THEME COLORS ===== */
+    /* Dark: Main dark background color - very dark blue */
     --dark: #0f172a;
+    /* Darker: Even darker shade for deeper backgrounds */
     --darker: #020617;
+    /* Surface: Semi-transparent white for glass/card backgrounds */
+    /* rgba means: Red, Green, Blue, Alpha(transparency) */
+    /* 0.08 = 8% visible, 92% transparent */
     --surface: rgba(255, 255, 255, 0.08);
+    /* Surface Hover: Slightly more visible when you hover over elements */
     --surface-hover: rgba(255, 255, 255, 0.12);
+    /* Border: Very subtle white border, barely visible */
     --border: rgba(255, 255, 255, 0.08);
-    /* Transparent border */
 
-    /* Text */
+    /* ===== TEXT COLORS ===== */
+    /* Text Main: Primary text color - almost white for readability */
     --text-main: #f8fafc;
+    /* Text Muted: Secondary text color - gray for less important text */
     --text-muted: #94a3b8;
 
-    /* Effects */
+    /* ===== VISUAL EFFECTS ===== */
+    /* Glass: Blur effect for frosted glass look */
     --glass: blur(16px) saturate(180%);
+    /* Shadow Small: Subtle shadow for small elements */
     --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    /* Shadow Large: Prominent shadow for floating elements */
     --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    /* Glow: Purple glow effect for highlights */
     --glow: 0 0 20px rgba(139, 92, 246, 0.5);
 
+    /* ===== BORDER RADIUS (ROUNDED CORNERS) ===== */
+    /* Radius: Standard rounded corners - 12 pixels */
     --radius: 12px;
+    /* Radius Large: More rounded corners - 24 pixels for big elements */
     --radius-lg: 24px;
 
-    /* Fonts */
+    /* ===== FONT FAMILIES ===== */
+    /* Font Heading: Stylish font for titles and headers */
     --font-heading: 'Outfit', sans-serif;
+    /* Font Body: Clean, readable font for regular text */
     --font-body: 'Inter', sans-serif;
 }
 
+/* ===================================
+   BODY (WHOLE PAGE) STYLES
+   =================================== */
 body {
+    /* Use the clean Inter font we defined above for all text */
     font-family: var(--font-body);
+    /* Background Gradient: Beautiful color transition */
+    /* linear-gradient creates a smooth color fade */
+    /* 135deg: angle of the gradient (diagonal) */
+    /* Colors transition from dark blue to purple */
     background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+    /* Fixed: Background stays in place when you scroll */
     background-attachment: fixed;
+    /* Minimum height: Always fill the full screen height */
+    /* vh = viewport height, 100vh = 100% of screen height */
     min-height: 100vh;
+    /* Default text color for entire page */
     color: var(--text-main);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    /* Font Smoothing: Makes text look smoother and clearer */
+    /* These are browser-specific properties for better text rendering */
+    -webkit-font-smoothing: antialiased; /* For Chrome, Safari */
+    -moz-osx-font-smoothing: grayscale; /* For Firefox on Mac */
+    /* Prevent horizontal scrolling (hide side-to-side scroll bar) */
     overflow-x: hidden;
 }
 
-/* Headings */
+/* ===================================
+   HEADINGS (H1, H2, H3, etc.)
+   =================================== */
+/* Apply these styles to all heading tags */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
+    /* Use the fancy Outfit font for all headings */
     font-family: var(--font-heading);
+    /* Letter Spacing: Slightly closer letters for modern look */
+    /* Negative value brings letters closer together */
     letter-spacing: -0.02em;
+    /* Pure white color for headings to stand out */
     color: white;
 }
 
-/* Authentication Pages */
+/* ===================================
+   AUTHENTICATION PAGES
+   (Login and Signup Pages)
+   =================================== */
+/* Container that holds the login/signup form */
 .auth-container {
+    /* Flexbox: Modern layout system for centering content */
     display: flex;
+    /* Center horizontally */
     justify-content: center;
+    /* Center vertically */
     align-items: center;
+    /* Always fill the full screen height */
     min-height: 100vh;
+    /* Add space around the form on all sides */
     padding: 20px;
+    /* Position relative: Allows child elements to position absolutely if needed */
     position: relative;
-    /* Animated background elements could be added here later */
+    /* Future: Can add animated background elements here */
 }
 
+/* The actual box/card containing the login/signup form */
 .auth-box {
+    /* Semi-transparent white background (3% opacity) */
     background: rgba(255, 255, 255, 0.03);
+    /* Backdrop Filter: Creates frosted glass effect by blurring background */
     backdrop-filter: blur(16px);
+    /* Webkit version for Safari browser compatibility */
     -webkit-backdrop-filter: blur(16px);
+    /* Inner spacing inside the box */
     padding: 48px;
+    /* Large rounded corners for modern look */
     border-radius: var(--radius-lg);
+    /* Shadow: Makes box appear floating above background */
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    /* Take full width on small screens */
     width: 100%;
+    /* But never wider than 420 pixels */
     max-width: 420px;
+    /* Subtle border to separate from background */
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* The main heading (h2) inside login/signup box */
 .auth-box h2 {
+    /* Space below the heading */
     margin-bottom: 32px;
+    /* Center the text */
     text-align: center;
+    /* Large text size */
     font-size: 32px;
+    /* Extra bold weight */
     font-weight: 800;
+    /* Gradient Text Effect: Beautiful color transition in the text itself */
+    /* First, create the gradient background */
     background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+    /* Clip the background to only show inside the text */
     -webkit-background-clip: text;
+    /* Make the actual text color transparent so gradient shows through */
     -webkit-text-fill-color: transparent;
 }
 
+/* ===================================
+   FORM ELEMENTS
+   =================================== */
+/* Each input field container (label + input) */
 .form-group {
+    /* Space below each form field */
     margin-bottom: 24px;
 }
 
+/* Labels above input fields (like "Username:", "Password:") */
 .form-group label {
+    /* Display as block so it takes full width and sits on own line */
     display: block;
+    /* Small space between label and input field */
     margin-bottom: 8px;
+    /* Gray color - less prominent than main text */
     color: var(--text-muted);
+    /* Medium bold weight */
     font-weight: 500;
+    /* Slightly smaller text */
     font-size: 14px;
+    /* Slightly wider letter spacing for readability */
     letter-spacing: 0.02em;
 }
 
+/* Text input fields (username, password, email, etc.) */
 .form-group input {
+    /* Take full width of container */
     width: 100%;
+    /* Padding: space inside the input box (top/bottom, left/right) */
     padding: 14px 16px;
+    /* Subtle border using our border color variable */
     border: 1px solid var(--border);
+    /* Rounded corners */
     border-radius: var(--radius);
+    /* Text size inside input */
     font-size: 16px;
+    /* Use same font as rest of page */
     font-family: var(--font-body);
+    /* Transition: Smooth animation when properties change */
+    /* cubic-bezier: Custom timing function for smooth, natural animation */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Dark semi-transparent background */
     background: rgba(0, 0, 0, 0.2);
+    /* White text color */
     color: white;
 }
 
+/* Placeholder text style (text showing before user types) */
 .form-group input::placeholder {
+    /* Very transparent white for subtle hint text */
     color: rgba(255, 255, 255, 0.3);
 }
 
+/* Input field when user clicks/focuses on it */
 .form-group input:focus {
+    /* Remove default browser outline */
     outline: none;
+    /* Change border to primary purple color */
     border-color: var(--primary);
+    /* Slightly darker background when focused */
     background: rgba(0, 0, 0, 0.3);
+    /* Glow Effect: Purple shadow around focused input */
+    /* Multiple values: horizontal, vertical, blur, spread, color */
     box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
 }
 
+/* ===================================
+   BUTTONS
+   =================================== */
+/* Base button styles that all buttons share */
 .btn {
+    /* Padding: Space inside button (top/bottom, left/right) */
     padding: 14px 24px;
+    /* Remove default button border */
     border: none;
+    /* Rounded corners */
     border-radius: var(--radius);
+    /* Hand cursor appears when hovering over button */
     cursor: pointer;
+    /* Text size inside button */
     font-size: 16px;
+    /* Semi-bold text */
     font-weight: 600;
+    /* Use same font as page */
     font-family: var(--font-body);
+    /* Smooth animation for all property changes (0.3 seconds) */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Position relative allows for special effects */
     position: relative;
+    /* Hidden: Hides anything that goes outside button boundaries */
     overflow: hidden;
 }
 
+/* Button when clicked/pressed down */
 .btn:active {
+    /* Slightly shrink button to show it's being pressed */
+    /* 0.98 = 98% of original size */
     transform: scale(0.98);
 }
 
+/* Primary Button (main action button like Submit, Login) */
 .btn-primary {
+    /* Gradient Background: Purple color fade for beautiful effect */
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    /* White text color */
     color: white;
+    /* Take full width of container */
     width: 100%;
+    /* Purple shadow to make button pop */
     box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    /* Subtle white border */
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Primary button when mouse hovers over it */
 .btn-primary:hover {
+    /* Larger, more prominent shadow */
     box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+    /* Move button up slightly (lift effect) */
+    /* Negative value moves up */
     transform: translateY(-2px);
+    /* Make colors slightly brighter (110% brightness) */
     filter: brightness(110%);
 }
 
+/* Secondary Button (less important actions like Cancel) */
 .btn-secondary {
+    /* Semi-transparent white background */
     background: rgba(255, 255, 255, 0.1);
+    /* White text */
     color: white;
+    /* Slight blur effect */
     backdrop-filter: blur(4px);
+    /* Very subtle border */
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Secondary button when hovering */
 .btn-secondary:hover {
+    /* Slightly more visible background */
     background: rgba(255, 255, 255, 0.15);
+    /* Lift up effect */
     transform: translateY(-2px);
 }
 
+/* Success Button (positive actions like "Start Call") */
 .btn-success {
+    /* Green gradient background */
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    /* White text */
     color: white;
+    /* Green shadow */
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
+/* Success button hover effect */
 .btn-success:hover {
+    /* Lift up */
     transform: translateY(-2px);
+    /* Larger green glow */
     box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
 }
 
+/* Danger Button (destructive actions like "Delete", "End Call") */
 .btn-danger {
+    /* Red gradient background */
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    /* White text */
     color: white;
+    /* Red shadow */
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
+/* Danger button hover effect */
 .btn-danger:hover {
+    /* Lift up */
     transform: translateY(-2px);
+    /* Larger red glow */
     box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
 }
 
+/* ===================================
+   ALERTS (Error/Success Messages)
+   =================================== */
+/* Container for alert messages */
 .alert {
+    /* Inner spacing */
     padding: 16px;
+    /* Rounded corners */
     border-radius: var(--radius);
+    /* Space below alert */
     margin-bottom: 24px;
+    /* Smaller text size */
     font-size: 14px;
+    /* Medium bold weight */
     font-weight: 500;
+    /* Colored left border (color set by .error or .success classes) */
     border-left: 4px solid;
+    /* Blur background behind alert */
     backdrop-filter: blur(8px);
 }
 
+/* Error Alert (red) */
 .alert.error {
+    /* Red tinted background (10% opacity) */
     background: rgba(239, 68, 68, 0.1);
+    /* Light red text color */
     color: #fca5a5;
+    /* Red left border */
     border-color: var(--danger);
 }
 
+/* Success Alert (green) */
 .alert.success {
+    /* Green tinted background */
     background: rgba(16, 185, 129, 0.1);
+    /* Light green text color */
     color: #86efac;
+    /* Green left border */
     border-color: var(--success);
 }
 
+/* ===================================
+   AUTH LINKS ("Don't have an account?" links)
+   =================================== */
+/* Container for link text below forms */
 .auth-link {
+    /* Center the text */
     text-align: center;
+    /* Space above */
     margin-top: 24px;
+    /* Gray color */
     color: var(--text-muted);
+    /* Small text size */
     font-size: 14px;
 }
 
+/* The actual clickable link */
 .auth-link a {
+    /* Light purple color */
     color: var(--primary-light);
+    /* Remove underline */
     text-decoration: none;
+    /* Semi-bold weight */
     font-weight: 600;
+    /* Smooth color change animation */
     transition: all 0.2s;
 }
 
+/* Link when hovering */
 .auth-link a:hover {
+    /* Change to white */
     color: white;
+    /* Add purple glow effect around text */
     text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
 }
 
-/* Dashboard */
-/* Dashboard */
+/* ===================================
+   DASHBOARD (Main App Page)
+   =================================== */
+/* Main container for entire dashboard */
 .dashboard-container {
-    height: 100vh;
+    /* Fill full screen height */
+    height: 100vh; /* vh = viewport height */
+    /* Use flexbox layout */
     display: flex;
+    /* Stack children vertically (header on top, content below) */
     flex-direction: column;
+    /* Transparent to show body gradient */
     background: transparent;
-    /* Changed to use body gradient */
 }
 
+/* Top navigation bar of dashboard */
 .dashboard-header {
+    /* Frosted glass effect background */
     background: rgba(255, 255, 255, 0.03);
+    /* Blur effect for glass look */
     backdrop-filter: blur(16px);
+    /* Safari browser version */
     -webkit-backdrop-filter: blur(16px);
+    /* White text */
     color: white;
+    /* Inner spacing (top/bottom, left/right) */
     padding: 16px 32px;
+    /* Flexbox for horizontal layout */
     display: flex;
+    /* Space between logo and user info */
     justify-content: space-between;
+    /* Center items vertically */
     align-items: center;
+    /* Shadow below header for depth */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    /* Position relative for layering */
     position: relative;
+    /* Z-index: Stacking order (higher = on top) */
+    /* 10 means it appears above most other elements */
     z-index: 10;
+    /* Bottom border for separation */
     border-bottom: 1px solid var(--border);
 }
 
+/* Main title/logo text in header */
 .dashboard-header h1 {
+    /* Large text size */
     font-size: 24px;
+    /* Extra bold */
     font-weight: 800;
+    /* Gradient text effect (purple to cyan) */
     background: linear-gradient(135deg, #a78bfa, #22d3ee);
+    /* Clip background to text shape only */
     -webkit-background-clip: text;
     background-clip: text;
+    /* Make text transparent so gradient shows */
     -webkit-text-fill-color: transparent;
+    /* Purple glow around text */
     text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
 }
 
+/* Logo image in header */
 .dashboard-header img {
+    /* Square size */
     width: 40px;
     height: 40px;
+    /* Purple drop shadow effect on logo */
     filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.4));
 }
 
+/* User info container in top-right (shows username and profile pic) */
 .user-info {
+    /* Flexbox for horizontal layout */
     display: flex;
+    /* Center items vertically */
     align-items: center;
+    /* Space between username and profile pic */
     gap: 12px;
+    /* Inner padding (top/bottom, sides, left) */
+    /* Different values create pill shape */
     padding: 6px 8px 6px 16px;
+    /* Semi-transparent white background */
     background: rgba(255, 255, 255, 0.05);
+    /* Fully rounded ends (pill shape) */
     border-radius: 50px;
+    /* Subtle border */
     border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Smooth animation for color changes */
     transition: all 0.2s ease;
 }
 
+/* User info when hovering */
 .user-info:hover {
+    /* Slightly more visible background */
     background: rgba(255, 255, 255, 0.1);
+    /* Slightly more visible border */
     border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Username text in header */
 .user-info h3 {
+    /* Small text size */
     font-size: 14px;
+    /* Semi-bold */
     font-weight: 600;
+    /* White text color */
     color: var(--text-main);
+    /* Remove default margin */
     margin: 0;
 }
 
+/* Small profile picture in header */
 .profile-pic-small {
+    /* Square size */
     width: 36px;
     height: 36px;
-    border-radius: 50%;
+    /* Make it circular */
+    border-radius: 50%; /* 50% makes perfect circle */
+    /* Cover: Image fills entire circle, may crop to fit */
     object-fit: cover;
+    /* White border around profile pic */
     border: 2px solid rgba(255, 255, 255, 0.2);
+    /* Shadow for depth */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    /* Smooth animation for size changes */
     transition: transform 0.2s;
 }
 
+/* Profile pic hover effect - slightly grow */
 .profile-pic-small:hover {
+    /* Grow to 110% of original size */
     transform: scale(1.1);
+    /* Change border to purple */
     border-color: var(--primary-light);
 }
 
+/* Second hover rule (redundant, same effect) */
 .profile-pic-small:hover {
     transform: scale(1.1);
 }
 
+/* Main content area below header */
 .dashboard-content {
+    /* Flexbox for side-by-side layout */
     display: flex;
+    /* Take up remaining space (fills rest of screen) */
     flex: 1;
+    /* Hide scrollbars */
     overflow: hidden;
 }
 
+/* ===================================
+   USERS PANEL (Left Sidebar)
+   =================================== */
+/* Left sidebar showing list of users */
 .users-panel {
+    /* Fixed width */
     width: 380px;
+    /* Dark semi-transparent background with slight blue tint */
     background: rgba(15, 23, 42, 0.6);
+    /* Blur effect */
     backdrop-filter: blur(12px);
+    /* Safari version */
     -webkit-backdrop-filter: blur(12px);
+    /* Right border to separate from main content */
     border-right: 1px solid var(--border);
+    /* Vertical flexbox layout */
     display: flex;
     flex-direction: column;
 }
 
+/* Heading at top of users panel ("Users" or "Online Users") */
 .users-panel h3 {
+    /* Inner spacing */
     padding: 24px;
+    /* Transparent background */
     background: transparent;
+    /* Bottom border for separation */
     border-bottom: 1px solid var(--border);
+    /* White text */
     color: var(--text-main);
+    /* Medium text size */
     font-size: 18px;
+    /* Bold weight */
     font-weight: 700;
+    /* Slightly tighter letters */
     letter-spacing: -0.01em;
+    /* Remove default margin */
     margin: 0;
 }
 
+/* Scrollable container for list of users */
 .users-list {
+    /* Take up remaining space in panel */
     flex: 1;
+    /* Allow vertical scrolling if list is long */
     overflow-y: auto;
+    /* Inner padding */
     padding: 16px;
 }
 
+/* ===== CUSTOM SCROLLBAR STYLING ===== */
+/* These work in Chrome, Safari, Edge (not Firefox) */
+
+/* Width of the scrollbar */
 .users-list::-webkit-scrollbar {
-    width: 6px;
+    width: 6px; /* Thin scrollbar */
 }
 
+/* Track (background) of scrollbar */
 .users-list::-webkit-scrollbar-track {
+    /* Invisible/transparent */
     background: transparent;
 }
 
+/* The draggable thumb/handle */
 .users-list::-webkit-scrollbar-thumb {
+    /* Semi-transparent white */
     background: rgba(255, 255, 255, 0.1);
+    /* Rounded ends */
     border-radius: 3px;
 }
 
+/* Scrollbar thumb when hovering */
 .users-list::-webkit-scrollbar-thumb:hover {
+    /* More visible when hovering */
     background: rgba(255, 255, 255, 0.2);
 }
 
+/* ===================================
+   INDIVIDUAL USER CARDS
+   =================================== */
+/* Each user item in the list */
 .user-item {
+    /* Inner spacing */
     padding: 12px;
+    /* Flexbox for horizontal layout */
     display: flex;
+    /* Center items vertically */
     align-items: center;
+    /* Space between profile pic and text */
     gap: 16px;
+    /* Hand cursor shows it's clickable */
     cursor: pointer;
+    /* Smooth animation for all changes */
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Space below each user card */
     margin-bottom: 8px;
+    /* Rounded corners */
     border-radius: var(--radius);
+    /* Transparent background by default */
     background: transparent;
+    /* Invisible border by default */
     border: 1px solid transparent;
 }
 
+/* User item when hovering */
 .user-item:hover {
+    /* Subtle white background appears */
     background: rgba(255, 255, 255, 0.05);
+    /* Border becomes visible */
     border-color: rgba(255, 255, 255, 0.05);
+    /* Slide to the right slightly */
     transform: translateX(4px);
+    /* Remove shadow (keeping it clean) */
     box-shadow: none;
 }
 
+/* User item when selected/active */
 .user-item.active {
+    /* Purple gradient background */
     background: linear-gradient(90deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+    /* Purple border */
     border-color: rgba(139, 92, 246, 0.2);
 }
 
+/* Profile picture in user list */
 .user-item img {
+    /* Square size */
     width: 48px;
     height: 48px;
+    /* Rounded corners (not fully circular) */
     border-radius: 12px;
+    /* Cover: Image fills space, may crop */
     object-fit: cover;
+    /* Remove any margin */
     margin: 0;
+    /* Subtle border */
     border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Profile pic when hovering over user item */
 .user-item:hover img {
+    /* Border becomes purple */
     border-color: var(--primary-light);
+    /* Slightly grow */
     transform: scale(1.05);
 }
 
+/* Container for user's name and status */
 .user-item-info {
+    /* Take up remaining space */
     flex: 1;
-    min-width: 0;
+    /* Don't shrink below content size */
+    min-width: 0; /* Allows text to truncate with ellipsis */
+    /* No padding */
     padding: 0;
 }
 
+/* User's name */
 .user-item-info h4 {
+    /* Remove default margin except small space below */
     margin: 0 0 4px 0;
+    /* Medium text size */
     font-size: 16px;
+    /* Semi-bold */
     font-weight: 600;
+    /* White text */
     color: var(--text-main);
+    /* Don't wrap to next line */
     white-space: nowrap;
+    /* Hide text that overflows */
     overflow: hidden;
+    /* Show "..." for cut-off text */
     text-overflow: ellipsis;
 }
 
+/* User's status text ("Online", "Offline", etc.) */
 .user-item-info p {
+    /* Remove margin */
     margin: 0;
+    /* Small text */
     font-size: 12px;
+    /* Gray color (less prominent) */
     color: var(--gray);
+    /* Flexbox for icon + text layout */
     display: flex;
+    /* Center items vertically */
     align-items: center;
+    /* Space between status dot and text */
     gap: 6px;
+    /* Medium weight */
     font-weight: 500;
 }
 
+/* ===================================
+   STATUS INDICATOR DOTS
+   (Online, Offline, On Call)
+   =================================== */
+/* Small colored dot showing user status */
 .status-indicator {
+    /* Small circle size */
     width: 10px;
     height: 10px;
+    /* Make it circular */
     border-radius: 50%;
+    /* Display as inline element */
     display: inline-block;
+    /* White border around dot */
     border: 2px solid white;
+    /* Subtle shadow */
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+    /* Pulse animation: Repeats forever, takes 2 seconds each cycle */
     animation: pulse 2s infinite;
 }
 
+/* Pulse Animation: Makes status dot fade in and out */
+/* Keyframes define the animation steps */
 @keyframes pulse {
-
+    /* At start (0%) and end (100%): fully visible */
     0%,
     100% {
-        opacity: 1;
+        opacity: 1; /* Fully visible */
     }
-
+    /* At middle (50%): semi-transparent */
     50% {
-        opacity: 0.7;
+        opacity: 0.7; /* 70% visible */
     }
 }
 
+/* Green dot for online users */
 .status-online {
+    /* Green background */
     background: var(--success);
+    /* Green glow around dot */
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
 }
 
+/* Gray dot for offline users */
 .status-offline {
+    /* Gray background */
     background: var(--gray);
+    /* No pulsing animation for offline */
     animation: none;
 }
 
+/* Orange/yellow dot for users on a call */
 .status-on_call {
+    /* Orange background */
     background: var(--warning);
+    /* Orange glow */
     box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
 }
 
+/* ===================================
+   USER ACTION BUTTONS
+   (Call buttons in user list)
+   =================================== */
+/* Container for action buttons (video/audio call buttons) */
 .user-actions {
+    /* Flexbox for horizontal layout */
     display: flex;
+    /* Space between buttons */
     gap: 8px;
+    /* Inner padding */
     padding: 12px;
+    /* Don't shrink when space is tight */
     flex-shrink: 0;
 }
 
+/* Individual action button (video or audio) */
 .action-btn {
+    /* Square size */
     width: 36px;
     height: 36px;
+    /* Rounded corners */
     border-radius: 10px;
+    /* No border */
     border: none;
+    /* Hand cursor */
     cursor: pointer;
+    /* Icon size */
     font-size: 16px;
+    /* Smooth animation */
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Flexbox to center the icon */
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    /* No shadow */
     box-shadow: none;
+    /* For positioning child elements if needed */
     position: relative;
 }
 
+/* SVG icon inside action button */
 .action-btn svg {
+    /* Icon size */
     width: 18px;
     height: 18px;
+    /* Smooth animation for icon */
     transition: transform 0.2s ease;
 }
 
+/* Video call button (purple) */
 .action-btn.video {
+    /* Purple background */
     background: var(--primary);
+    /* White icon color */
     color: white;
 }
 
+/* Video button hover effect */
 .action-btn.video:hover {
+    /* Lift up */
     transform: translateY(-2px);
+    /* Purple glow */
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
+/* Video button hover: icon grows slightly */
 .action-btn.video:hover svg {
     transform: scale(1.1);
 }
 
+/* Audio call button (green) */
 .action-btn.audio {
+    /* Green background */
     background: var(--success);
+    /* White icon color */
     color: white;
 }
 
+/* Audio button hover effect */
 .action-btn.audio:hover {
+    /* Lift up */
     transform: translateY(-2px);
+    /* Green glow */
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
+/* Audio button hover: icon grows */
 .action-btn.audio:hover svg {
     transform: scale(1.1);
 }
 
+/* Action button when being clicked */
 .action-btn:active {
+    /* Reset position (no lift) */
     transform: translateY(0);
 }
 
+/* Disabled action button (can't click) */
 .action-btn:disabled {
+    /* Semi-transparent */
     opacity: 0.5;
+    /* "Not allowed" cursor */
     cursor: not-allowed;
+    /* No animations (!important overrides other rules) */
     transform: none !important;
+    /* Gray background */
     background: var(--light-gray);
+    /* Gray icon */
     color: var(--gray);
 }
 
+/* Loading text shown while data is fetching */
 .loading {
+    /* Center text */
     text-align: center;
+    /* Space around text */
     padding: 40px 20px;
+    /* Gray color */
     color: var(--gray);
+    /* Medium weight */
     font-weight: 500;
 }
 
-/* Modal */
+/* ===================================
+   MODAL / POPUP DIALOGS
+   =================================== */
+/* Overlay that darkens/blurs the background */
 .modal {
+    /* Hidden by default */
     display: none;
+    /* Fixed: Stays in place even if page scrolls */
     position: fixed;
+    /* Cover entire screen from top-left corner */
     top: 0;
     left: 0;
+    /* Full screen width and height */
     width: 100%;
     height: 100%;
+    /* Very dark semi-transparent black background */
     background: rgba(0, 0, 0, 0.85);
-    /* Darker backdrop */
+    /* Blur the content behind the modal */
     backdrop-filter: blur(8px);
+    /* Center the modal content */
     justify-content: center;
     align-items: center;
+    /* High z-index to appear above everything */
     z-index: 1000;
+    /* Fade-in animation */
     animation: fadeIn 0.2s ease;
 }
 
+/* Fade-in animation for modal appearance */
 @keyframes fadeIn {
+    /* Start invisible */
     from {
         opacity: 0;
     }
-
+    /* End fully visible */
     to {
         opacity: 1;
     }
 }
 
+/* When modal is active/visible */
 .modal.active {
+    /* Show as flexbox to center content */
     display: flex;
 }
 
+/* The actual content box inside modal */
 .modal-content {
+    /* Dark blue-gray background */
     background: #1e293b;
-    /* Dark card */
+    /* Inner spacing */
     padding: 40px;
+    /* Large rounded corners */
     border-radius: var(--radius-lg);
+    /* Center text inside */
     text-align: center;
+    /* Maximum width */
     max-width: 400px;
+    /* Take 90% of screen width on small screens */
     width: 90%;
+    /* Large shadow for depth */
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    /* Subtle border */
     border: 1px solid rgba(255, 255, 255, 0.1);
+    /* For positioning the colored top bar */
     position: relative;
+    /* Hide anything outside boundaries */
     overflow: hidden;
+    /* Slide-up entrance animation */
     animation: slideUp 0.3s ease;
 }
 
+/* Colored bar at top of modal */
+/* ::before creates a pseudo-element */
 .modal-content::before {
+    /* Required for pseudo-element to show */
     content: '';
+    /* Position at very top */
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
+    /* Thin bar */
     height: 4px;
+    /* Gradient from purple to cyan */
     background: linear-gradient(90deg, var(--primary), var(--accent));
 }
 
+/* Slide-up animation for modal entrance */
 @keyframes slideUp {
+    /* Start below and invisible */
     from {
         transform: translateY(30px);
         opacity: 0;
     }
-
+    /* End at normal position and visible */
     to {
         transform: translateY(0);
         opacity: 1;
     }
 }
 
+/* Heading inside modal */
 .modal-content h3 {
+    /* Space below */
     margin-bottom: 24px;
+    /* White text */
     color: white;
+    /* Large text */
     font-size: 24px;
+    /* Bold */
     font-weight: 700;
 }
 
+/* Large profile picture in modal */
 .profile-pic-large {
+    /* Large square */
     width: 120px;
     height: 120px;
+    /* Circular */
     border-radius: 50%;
+    /* Cover image may crop */
     object-fit: cover;
+    /* Vertical spacing */
     margin: 24px 0;
+    /* Thick border matching modal background */
     border: 4px solid #1e293b;
+    /* Purple glow effect - multiple shadows */
     box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.3), 0 0 30px rgba(139, 92, 246, 0.2);
 }
 
+/* Container for call action buttons in modal */
 .call-buttons {
+    /* Horizontal flexbox */
     display: flex;
+    /* Space between buttons */
     gap: 16px;
+    /* Center buttons */
     justify-content: center;
+    /* Space above */
     margin-top: 32px;
 }
 
-/* Call Page */
+/* ===================================
+   VIDEO CALL PAGE
+   =================================== */
+/* Body specifically for call page (overrides main body) */
 .call-body {
+    /* Remove spacing */
     margin: 0;
     padding: 0;
+    /* Pure black for video background */
     background: #000;
-    /* Pure black for video page */
 }
 
+/* Main container for entire call interface */
 .call-container {
+    /* Position relative for absolutely positioned children */
     position: relative;
-    width: 100vw;
-    height: 100vh;
+    /* Full screen width */
+    width: 100vw; /* vw = viewport width */
+    /* Full screen height */
+    height: 100vh; /* vh = viewport height */
+    /* Hide any overflow */
     overflow: hidden;
 }
 
+/* Container for video elements */
 .video-container {
+    /* Absolute positioning for layering */
     position: absolute;
+    /* Black background */
     background: #000;
 }
 
+/* ===== REMOTE VIDEO (Other person's video) ===== */
+/* Takes up full screen */
 .remote-video {
+    /* Position at top-left corner */
     top: 0;
     left: 0;
+    /* Full width and height */
     width: 100%;
     height: 100%;
+    /* Z-index 1: Appears behind local video */
     z-index: 1;
 }
 
+/* The actual video element for remote person */
 .remote-video video {
+    /* Fill full container */
     width: 100%;
     height: 100%;
+    /* Contain: Shows entire video without cropping */
+    /* May have black bars (letterboxing) if aspect ratios don't match */
     object-fit: contain;
-    /* Show full video without stretching, works for both portrait and landscape */
+    /* Black background for letterboxing areas */
     background: #000;
-    /* Black background for letterboxing */
+    /* Position at top-left */
     position: absolute;
     top: 0;
     left: 0;
+    /* Z-index 1: Base layer */
     z-index: 1;
 }
 
+/* ===== LOCAL VIDEO (Your own video - Picture in Picture) ===== */
+/* Small floating window showing yourself */
 .local-video {
+    /* Absolute positioning to float on top */
     position: absolute;
+    /* Position from top */
     top: 24px;
+    /* Position from right side */
     right: 24px;
+    /* Fixed width */
     width: 320px;
+    /* Fixed height (16:9 aspect ratio) */
     height: 180px;
+    /* Large rounded corners */
     border-radius: var(--radius-lg);
+    /* Hide video outside rounded corners */
     overflow: hidden;
+    /* Dark shadow for depth */
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    /* Subtle white border */
     border: 2px solid rgba(255, 255, 255, 0.1);
+    /* Blur behind if supported */
     backdrop-filter: blur(10px);
+    /* Smooth shadow transition */
     transition: box-shadow 0.2s;
+    /* Dark background */
     background: #1e293b;
+    /* Z-index 200: Appears above remote video */
     z-index: 200;
+    /* Grab cursor: Shows you can drag it */
     cursor: grab;
 }
 
+/* When actively dragging local video */
 .local-video:active {
+    /* Change to grabbing cursor */
     cursor: grabbing;
 }
 
+/* The actual video element showing yourself */
 .local-video video {
+    /* Fill container */
     width: 100%;
     height: 100%;
+    /* Cover: Fill entire space, may crop */
     object-fit: cover;
+    /* Mirror effect: Flip horizontally so it looks natural */
+    /* -1 on X-axis creates mirror image */
     transform: scaleX(-1);
-    /* Mirror effect */
+    /* Position relative for layering */
     position: relative;
+    /* Z-index 1: Base layer */
     z-index: 1;
 }
 
+/* Local video hover effect */
 .local-video:hover {
+    /* More visible border */
     border-color: rgba(255, 255, 255, 0.3);
+    /* Stronger shadow */
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
 }
 
-/* Initial Video Info Overlay */
+/* ===================================
+   VIDEO INFO OVERLAY
+   (Shown during connection)
+   =================================== */
+/* Overlay shown while connecting to call */
 .video-info {
+    /* Absolute positioning */
     position: absolute;
+    /* Center horizontally and vertically */
+    /* 50% moves element to center, translate pulls it back by half its size */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    /* Center text inside */
     text-align: center;
+    /* Z-index 15: Above video-off overlay */
     z-index: 15;
-    /* Above video-off-overlay so it shows during connection */
+    /* Smooth fade transition */
     transition: opacity 0.5s ease;
+    /* Pointer events none: Doesn't block clicks */
     pointer-events: none;
-    /* Don't block clicks */
 }
 
+/* Profile picture shown during call connection */
 .call-avatar {
+    /* Large circle */
     width: 120px;
     height: 120px;
+    /* Fully circular */
     border-radius: 50%;
+    /* Space below */
     margin-bottom: 24px;
+    /* Purple border */
     border: 4px solid var(--primary);
+    /* Purple glow effect */
     box-shadow: var(--glow);
 }
 
-/* Video Off Overlay */
+/* ===================================
+   VIDEO OFF OVERLAY
+   (Shown when camera is disabled)
+   =================================== */
+/* Overlay that covers video when camera is turned off */
 .video-off-overlay {
+    /* Absolute positioning to cover video */
     position: absolute;
+    /* Cover entire parent */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    /* Gradient background (dark blue to darker blue) */
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    /* Hidden by default */
     display: none;
+    /* Flexbox for centering content */
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    align-items: center; /* Center horizontally */
+    justify-content: center; /* Center vertically */
+    /* Z-index 100: High enough to cover video stream */
     z-index: 100;
-    /* Much higher than video to ensure it covers black stream */
+    /* Inherit rounded corners from parent */
     border-radius: inherit;
 }
 
+/* Show overlay when visible class is added */
 .video-off-overlay.visible {
+    /* Display as flexbox */
     display: flex;
 }
 
+/* Profile picture shown when video is off */
 .video-off-avatar {
+    /* Large circle */
     width: 150px;
     height: 150px;
+    /* Fully circular */
     border-radius: 50%;
+    /* Cover: May crop to fit circle */
     object-fit: cover;
+    /* Subtle border */
     border: 4px solid rgba(255, 255, 255, 0.2);
+    /* Shadow for depth */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    /* Space below */
     margin-bottom: 20px;
+    /* Smooth transitions */
     transition: all 0.3s ease;
 }
 
-/* Local PiP avatar scaling */
+/* Smaller avatar for local picture-in-picture */
 .video-off-avatar.local {
+    /* Smaller size */
     width: 80px;
     height: 80px;
+    /* Thinner border */
     border-width: 2px;
+    /* No space below */
     margin-bottom: 0;
 }
 
+/* Main text shown when video is off (usually name) */
 .video-off-text {
+    /* Large text */
     font-size: 24px;
+    /* Semi-bold */
     font-weight: 600;
+    /* White color */
     color: white;
+    /* Minimal spacing */
     margin: 0 0 4px 0;
+    /* Shadow for better readability */
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
+/* Secondary text (like "Camera is off") */
 .video-off-subtext {
+    /* Smaller text */
     font-size: 14px;
+    /* Semi-transparent white (60% visible) */
     color: rgba(255, 255, 255, 0.6);
+    /* No margin */
     margin: 0;
 }
 
-/* Mic Off Indicator (WhatsApp style) */
+/* ===================================
+   MIC OFF INDICATOR
+   (WhatsApp-style mute indicator)
+   =================================== */
+/* Red circle that appears when microphone is muted */
 .mic-off-indicator {
+    /* Absolute positioning */
     position: absolute;
+    /* Position from bottom-left */
     bottom: 20px;
     left: 20px;
+    /* Circle size */
     width: 40px;
     height: 40px;
+    /* Red background (nearly opaque) */
     background: rgba(239, 68, 68, 0.95);
+    /* Fully circular */
     border-radius: 50%;
+    /* Hidden by default */
     display: none;
+    /* Flexbox to center icon */
     align-items: center;
     justify-content: center;
+    /* Z-index 150: Above other overlays */
     z-index: 150;
+    /* Shadow for depth */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    /* Pulsing animation */
     animation: mic-pulse 2s infinite;
 }
 
+/* Show indicator when visible class is added */
 .mic-off-indicator.visible {
     display: flex;
 }
 
+/* Microphone icon inside indicator */
 .mic-off-indicator svg {
+    /* Icon size */
     width: 20px;
     height: 20px;
+    /* No fill (outline only) */
     fill: none;
+    /* White stroke/outline */
     stroke: white;
+    /* Line thickness */
     stroke-width: 2;
+    /* Rounded line ends */
     stroke-linecap: round;
+    /* Rounded line joins */
     stroke-linejoin: round;
 }
 
+/* Pulsing animation for mic indicator */
 @keyframes mic-pulse {
+    /* At start and end: normal shadow */
     0%, 100% {
         box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
     }
+    /* At middle: stronger glow */
     50% {
         box-shadow: 0 4px 20px rgba(239, 68, 68, 0.7);
     }
 }
 
-/* Smaller mic indicator for local PiP window */
+/* Smaller mic indicator for local video window */
 .local-video .mic-off-indicator {
+    /* Closer to corner */
     bottom: 10px;
     left: 10px;
+    /* Smaller circle */
     width: 28px;
     height: 28px;
 }
 
+/* Smaller icon for local video */
 .local-video .mic-off-indicator svg {
+    /* Smaller icon */
     width: 14px;
     height: 14px;
 }
 
+/* ===================================
+   CALL CONTROLS
+   (Buttons at bottom: mute, camera, end call)
+   =================================== */
+/* Container for control buttons */
 .call-controls {
+    /* Absolute positioning at bottom */
     position: absolute;
     bottom: 40px;
+    /* Center horizontally */
     left: 50%;
+    /* Transform: Center and initially hide below screen */
+    /* translateX(-50%) centers it, translateY(100px) moves it down */
     transform: translateX(-50%) translateY(100px);
+    /* Flexbox for horizontal buttons */
     display: flex;
+    /* Space between buttons */
     gap: 16px;
+    /* Z-index 300: Highest, above everything */
     z-index: 300;
+    /* Inner spacing */
     padding: 12px 24px;
+    /* Dark frosted glass background */
     background: rgba(15, 23, 42, 0.9);
+    /* Blur effect */
     backdrop-filter: blur(20px);
+    /* Pill-shaped (fully rounded ends) */
     border-radius: 60px;
+    /* Shadow for depth */
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+    /* Subtle border */
     border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Initially invisible */
     opacity: 0;
+    /* Smooth animations */
     transition: all 0.3s ease;
+    /* Can't click when hidden */
     pointer-events: none;
 }
 
-/* Show controls when call-container is active (has mouse activity) */
+/* Show controls when call-container is active (mouse is moving) */
 .call-container.active .call-controls {
+    /* Slide up to visible position */
     transform: translateX(-50%) translateY(0);
+    /* Fully visible */
     opacity: 1;
+    /* Can click buttons */
     pointer-events: auto;
 }
 
-/* Hide cursor when inactive */
+/* Hide cursor when inactive (no mouse movement) */
 .call-container.inactive {
+    /* Hide cursor completely */
     cursor: none;
 }
 
+/* Individual control button (mute, camera, etc.) */
 .control-btn {
+    /* Circular button */
     width: 56px;
     height: 56px;
+    /* Fully circular */
     border-radius: 50%;
+    /* No border */
     border: none;
+    /* Hand cursor */
     cursor: pointer;
+    /* Large icons */
     font-size: 24px;
+    /* Smooth animations */
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Semi-transparent white background */
     background: rgba(255, 255, 255, 0.1);
+    /* White icon color */
     color: white;
+    /* Blur effect */
     backdrop-filter: blur(10px);
+    /* Flexbox to center icon */
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center; /* Vertical center */
+    justify-content: center; /* Horizontal center */
+    /* For positioning if needed */
     position: relative;
 }
 
+/* SVG icons inside control buttons */
 .control-btn svg {
+    /* Icon size */
     width: 24px;
     height: 24px;
+    /* Use current text color for icon */
     stroke: currentColor;
+    /* Line thickness */
     stroke-width: 2;
 }
 
-/* Branding Styles */
+/* ===================================
+   BRANDING STYLES
+   =================================== */
+/* Container for brand text with special formatting */
 .brand-text {
+    /* Inline flex for horizontal layout */
     display: inline-flex;
+    /* Center items vertically */
     align-items: center;
+    /* Small space between elements */
     gap: 2px;
 }
 
+/* Stylized text (like Hindi characters) with gradient */
 .hindi-stylized {
+    /* Purple color */
     color: var(--primary);
+    /* Bold */
     font-weight: 700;
+    /* Fancy font */
     font-family: 'Outfit', sans-serif;
-    /* Hindi glyphs usually fallback to system font which is fine, or we can use a specific one provided by OS */
+    /* Position relative for effects */
     position: relative;
+    /* Display as block for transformations */
     display: inline-block;
+    /* Gradient background */
     background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    /* Clip to text shape */
     -webkit-background-clip: text;
+    /* Make text transparent so gradient shows */
     -webkit-text-fill-color: transparent;
+    /* Purple glow */
     text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
 }
 
+/* Control button hover effect */
 .control-btn:hover {
+    /* Lift up */
     transform: translateY(-4px);
+    /* Brighter background */
     background: rgba(255, 255, 255, 0.2);
+    /* White glow */
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
+/* End call button (red) - more prominent */
 .end-call-btn {
+    /* Red gradient background (!important overrides other styles) */
     background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%) !important;
+    /* Red glow */
     box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
 }
 
+/* End call button hover - more dramatic */
 .end-call-btn:hover {
+    /* Lift higher and grow slightly */
     transform: translateY(-6px) scale(1.1);
+    /* Stronger red glow */
     box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
 }
 
 
-/* Responsive */
+/* ===================================
+   RESPONSIVE DESIGN FOR MOBILE
+   (Screens 768px wide or smaller)
+   =================================== */
+/* @media applies styles only when condition is met */
+/* max-width: 768px means "screens up to 768 pixels wide" (tablets and phones) */
 @media (max-width: 768px) {
+    /* Change dashboard layout to vertical stacking */
     .dashboard-content {
+        /* Stack items vertically instead of side-by-side */
         flex-direction: column;
     }
 
+    /* Users panel takes full width on mobile */
     .users-panel {
+        /* Full width instead of fixed 380px */
         width: 100%;
+        /* Fixed height instead of full screen */
         height: 350px;
+        /* Remove right border */
         border-right: none;
+        /* Add bottom border instead */
         border-bottom: 1px solid var(--border);
     }
 
-    /* Mobile video optimizations */
+    /* ===== MOBILE VIDEO OPTIMIZATIONS ===== */
+    
+    /* Remote video: Show full face without cropping */
     .remote-video video {
+        /* Contain: Shows entire video */
         object-fit: contain;
-        /* Show full face instead of cropping */
+        /* Black letterboxing if needed */
         background: #000;
-        /* Black background for letterboxing */
     }
 
+    /* Local video: Smaller and portrait-oriented */
     .local-video {
+        /* Narrower */
         width: 100px;
+        /* Taller (portrait aspect ratio for selfies) */
         height: 140px;
-        /* Portrait aspect ratio for mobile */
+        /* Move to top (avoid blocking controls at bottom) */
         top: 80px;
-        /* Move to top to avoid controls */
+        /* Closer to edge */
         right: 12px;
+        /* Don't position from bottom */
         bottom: auto;
     }
 
+    /* Keep local video as cover (fill space) */
     .local-video video {
         object-fit: cover;
-        /* Keep cover for self-view */
     }
 
+    /* Call controls: Smaller and closer to bottom */
     .call-controls {
+        /* Closer to bottom on mobile */
         bottom: 24px;
+        /* Less padding */
         padding: 10px 16px;
+        /* Less space between buttons */
         gap: 12px;
     }
 
+    /* Smaller control buttons */
     .control-btn {
+        /* Smaller circles */
         width: 48px;
         height: 48px;
     }
 
+    /* Smaller icons inside buttons */
     .control-btn svg {
         width: 20px;
         height: 20px;
     }
 
+    /* End call button: Same smaller size on mobile */
     .end-call-btn {
         width: 48px;
         height: 48px;
     }
 
+    /* Auth box: Less padding on mobile */
     .auth-box {
+        /* Reduced padding for smaller screens */
         padding: 32px 24px;
     }
 
+    /* Modal: Less padding and wider on mobile */
     .modal-content {
+        /* Less padding */
         padding: 32px 24px;
+        /* Take up more of screen width */
         width: 95%;
     }
 
+    /* Dashboard header: Smaller on mobile */
     .dashboard-header {
+        /* Less padding */
         padding: 12px 20px;
     }
 
+    /* Dashboard title: Smaller text */
     .dashboard-header h1 {
+        /* Smaller font size */
         font-size: 18px;
     }
 
+    /* Hide username text on mobile (keep profile pic only) */
     .user-info h3 {
+        /* Completely hide username text */
         display: none;
     }
 
+    /* User items: Tighter spacing */
     .user-item {
+        /* Less margin */
         margin: 6px 8px;
     }
 
+    /* User profile pictures: Slightly larger on mobile */
     .user-item img {
+        /* Bigger for easier tapping */
         width: 52px;
         height: 52px;
+        /* More margin for spacing */
         margin: 10px;
     }
 
+    /* Action buttons: Smaller on mobile */
     .action-btn {
+        /* Smaller circles */
         width: 32px;
         height: 32px;
     }
 
+    /* Action button icons: Smaller */
     .action-btn svg {
+        /* Smaller icons */
         width: 16px;
         height: 16px;
     }
 }
 
-/* Chat Area / Right Panel */
+/* ===================================
+   CHAT AREA / RIGHT PANEL
+   (Main content area on right side)
+   =================================== */
+/* Right side of dashboard - shows selected user's profile */
 .chat-area {
+    /* Take up remaining space */
     flex: 1;
+    /* Vertical flexbox */
     display: flex;
     flex-direction: column;
+    /* Center content both ways */
     justify-content: center;
     align-items: center;
+    /* Transparent to show body gradient */
     background: transparent;
+    /* For layering */
     position: relative;
+    /* Inner spacing */
     padding: 40px;
 }
 
+/* Empty state (when no user is selected) */
 .empty-state {
+    /* Center text */
     text-align: center;
+    /* Gray color */
     color: var(--text-muted);
+    /* Semi-transparent */
     opacity: 0.8;
 }
 
+/* Image in empty state */
 .empty-state img {
+    /* Medium size */
     width: 80px;
     height: 80px;
+    /* Space below */
     margin-bottom: 24px;
+    /* Remove all color (make it gray) */
     filter: grayscale(100%);
+    /* Very transparent */
     opacity: 0.5;
 }
 
+/* Heading in empty state */
 .empty-state h2 {
+    /* Large text */
     font-size: 24px;
+    /* Regular weight */
     font-weight: 400;
+    /* Small space below */
     margin-bottom: 8px;
+    /* White text */
     color: var(--text-main);
 }
 
+/* ===================================
+   USER PROFILE VIEW
+   (Shown when user is selected)
+   =================================== */
+/* Container for selected user's profile */
 .user-profile-view {
+    /* Center content */
     text-align: center;
+    /* Full width */
     width: 100%;
+    /* But not too wide */
     max-width: 600px;
+    /* Fade-in animation */
     animation: fadeIn 0.3s ease;
 }
 
+/* Large profile picture in profile view */
 .profile-pic-jumbo {
+    /* Large square */
     width: 180px;
     height: 180px;
+    /* Fully circular */
     border-radius: 50%;
+    /* Cover: May crop to fit */
     object-fit: cover;
+    /* Thick subtle border */
     border: 6px solid rgba(255, 255, 255, 0.05);
+    /* Shadow for depth */
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    /* Space below */
     margin-bottom: 24px;
 }
 
+/* Status badge ("Online", "Offline", etc.) */
 .status-badge {
+    /* Inline element that can have padding */
     display: inline-block;
+    /* Pill padding */
     padding: 6px 16px;
+    /* Fully rounded (pill shape) */
     border-radius: 50px;
+    /* Subtle background */
     background: rgba(255, 255, 255, 0.05);
+    /* Small text */
     font-size: 14px;
+    /* Space below */
     margin-bottom: 48px;
+    /* Subtle border */
     border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Light purple text */
     color: var(--primary-light);
 }
 
+/* Container for action cards (video/audio call buttons) */
 .profile-actions {
+    /* Grid layout: 2 columns of equal width */
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* 1fr = 1 fraction of available space */
+    /* Space between cards */
     gap: 24px;
+    /* Maximum width */
     max-width: 480px;
+    /* Center the grid */
     margin: 0 auto;
 }
 
+/* Individual action card (video or audio call) */
 .action-card {
+    /* Frosted glass background */
     background: rgba(255, 255, 255, 0.03);
+    /* Subtle border */
     border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Large rounded corners */
     border-radius: 24px;
+    /* Inner spacing */
     padding: 32px 24px;
+    /* Clickable cursor */
     cursor: pointer;
+    /* Smooth animations */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Vertical flex layout */
     display: flex;
     flex-direction: column;
+    /* Center items */
     align-items: center;
+    /* Space between items */
     gap: 16px;
+    /* Blur background */
     backdrop-filter: blur(10px);
+    /* Reset border (will be set individually) */
     border: none;
+    /* No default outline */
     outline: none;
+    /* Inherit text color */
     color: inherit;
+    /* Use same font */
     font-family: inherit;
 }
 
+/* Action card hover effect */
 .action-card:hover {
+    /* Lift up */
     transform: translateY(-8px);
+    /* Brighter background */
     background: rgba(255, 255, 255, 0.08);
+    /* More visible border */
     border-color: rgba(255, 255, 255, 0.2);
+    /* Shadow for depth */
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
+/* Circular icon container inside action card */
 .icon-circle {
+    /* Large circle */
     width: 64px;
     height: 64px;
+    /* Fully circular */
     border-radius: 50%;
+    /* Flexbox to center icon */
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Space below */
     margin-bottom: 8px;
+    /* Smooth animations */
     transition: all 0.3s ease;
 }
 
+/* SVG icon inside circle */
 .icon-circle svg {
+    /* Large icon */
     width: 32px;
     height: 32px;
+    /* White stroke */
     stroke: white;
+    /* Line thickness */
     stroke-width: 2;
 }
 
+/* Label text below icon */
 .action-card span {
+    /* Medium text size */
     font-size: 18px;
+    /* Semi-bold */
     font-weight: 600;
+    /* White text */
     color: var(--text-main);
 }
 
-/* Video Card Styles */
+/* ===== VIDEO CALL CARD ===== */
+/* Icon circle for video card */
 .action-card.video .icon-circle {
+    /* Purple to pink gradient */
     background: linear-gradient(135deg, var(--primary), var(--secondary));
+    /* Purple glow */
     box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
 }
 
+/* Video card hover: stronger glow */
 .action-card.video:hover .icon-circle {
+    /* Stronger purple glow */
     box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+    /* Grow slightly */
     transform: scale(1.1);
 }
 
-/* Audio Card Styles */
+/* ===== AUDIO CALL CARD ===== */
+/* Icon circle for audio card */
 .action-card.audio .icon-circle {
+    /* Green gradient */
     background: linear-gradient(135deg, var(--success), #059669);
+    /* Green glow */
     box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
 }
 
+/* Audio card hover: stronger glow */
 .action-card.audio:hover .icon-circle {
+    /* Stronger green glow */
     box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+    /* Grow slightly */
     transform: scale(1.1);
 }
 
+/* Generic feather icon class */
 .feather {
+    /* Icon size */
     width: 24px;
     height: 24px;
+    /* Use current color */
     stroke: currentColor;
+    /* Line thickness */
     stroke-width: 2;
+    /* Rounded line ends */
     stroke-linecap: round;
+    /* Rounded line joints */
     stroke-linejoin: round;
 }
 
-/* Mobile Responsive */
+/* ===================================
+   MOBILE RESPONSIVE FOR PROFILE AREA
+   =================================== */
+/* Apply to screens 768px or smaller */
 @media (max-width: 768px) {
+    /* Dashboard: Stack vertically */
     .dashboard-content {
         flex-direction: column;
     }
 
+    /* Users panel: Full width, limited height */
     .users-panel {
+        /* Auto height based on content */
         height: auto;
+        /* Remove side border */
         border-right: none;
+        /* Add bottom border */
         border-bottom: 1px solid var(--border);
+        /* Full width */
         width: 100%;
+        /* Maximum 40% of screen height */
         max-height: 40vh;
     }
 
+    /* Chat area: Less padding, minimum height */
     .chat-area {
+        /* Less padding on mobile */
         padding: 24px;
+        /* Minimum half screen height */
         min-height: 50vh;
     }
 
+    /* Profile actions: Single column on mobile */
     .profile-actions {
+        /* Stack cards vertically (1 column) */
         grid-template-columns: 1fr;
     }
 }
 
-/* Call Notifications - for connection status feedback */
+/* ===================================
+   CALL NOTIFICATIONS
+   (Connection status feedback)
+   =================================== */
+/* Notification banner that appears at top during calls */
 .call-notification {
+    /* Absolute positioning */
     position: absolute;
+    /* Near top of screen */
     top: 20px;
+    /* Center horizontally */
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%); /* Pull back by half width to center */
+    /* Z-index 1000: Appear above everything */
     z-index: 1000;
+    /* Inner spacing */
     padding: 12px 24px;
+    /* Rounded corners */
     border-radius: var(--radius);
+    /* Dark frosted glass background */
     background: rgba(15, 23, 42, 0.95);
+    /* Blur effect */
     backdrop-filter: blur(20px);
+    /* White text */
     color: white;
+    /* Small text */
     font-size: 14px;
+    /* Medium weight */
     font-weight: 500;
+    /* Shadow for depth */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    /* Subtle border */
     border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Slide-down entrance animation */
     animation: slideDown 0.3s ease;
+    /* Don't get too wide */
     max-width: 90%;
+    /* Center text */
     text-align: center;
+    /* Smooth opacity changes */
     transition: opacity 0.3s ease;
 }
 
+/* Slide-down animation for notification entrance */
 @keyframes slideDown {
+    /* Start above and invisible */
     from {
         transform: translateX(-50%) translateY(-20px);
         opacity: 0;
     }
+    /* End at normal position and visible */
     to {
         transform: translateX(-50%) translateY(0);
         opacity: 1;
     }
 }
 
+/* Success notification (green) */
 .call-notification-success {
+    /* Green background */
     background: rgba(16, 185, 129, 0.95);
+    /* Light green border */
     border-color: rgba(52, 211, 153, 0.3);
 }
 
+/* Warning notification (orange/yellow) */
 .call-notification-warning {
+    /* Orange background */
     background: rgba(245, 158, 11, 0.95);
+    /* Light orange border */
     border-color: rgba(251, 191, 36, 0.3);
 }
 
+/* Error notification (red) */
 .call-notification-error {
+    /* Red background */
     background: rgba(239, 68, 68, 0.95);
+    /* Light red border */
     border-color: rgba(248, 113, 113, 0.3);
 }
 
+/* Info notification (cyan/blue) */
 .call-notification-info {
+    /* Cyan background */
     background: rgba(6, 182, 212, 0.95);
+    /* Light cyan border */
     border-color: rgba(34, 211, 238, 0.3);
 }

@@ -3,12 +3,26 @@
  * Handles peer-to-peer connection between two users
  */
 
-// WebRTC Configuration
+// WebRTC Configuration - Optimized for low bandwidth
 const config = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-    ]
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        // Free TURN servers for better connectivity on restricted networks
+        { 
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        },
+        {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        }
+    ],
+    iceCandidatePoolSize: 10, // Gather more candidates for better connectivity
+    iceTransportPolicy: 'all' // Try all connection methods
 };
 
 let localStream = null;
@@ -22,8 +36,8 @@ let isRemoteAudioEnabled = true; // Track remote peer's audio state via signalin
 let isCallConnected = false; // Track if WebRTC connection is established
 let pendingIceCandidates = []; // Queue ICE candidates until offer/answer is set
 let connectionRetryCount = 0;
-let maxConnectionRetries = 3;
-let signalingRetryDelay = 1000; // Start with 1 second
+let maxConnectionRetries = 5; // Increased from 3 to 5 for weak connections
+let signalingRetryDelay = 2000; // Increased from 1s to 2s for weak connections
 let connectionTimeout = null;
 let hasMediaPermissions = false;
 let audioOnlyMode = false; // Fallback when video permission denied
@@ -66,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             updateCallStatus('Preparing...');
             await sendSignal('receiver-ready', { ready: true });
             updateCallStatus('Ready, waiting for connection...');
-            signalingInterval = setInterval(checkForSignals, 200);
+            signalingInterval = setInterval(checkForSignals, 500); // 500ms interval (slower for weak connections)
             checkForSignals();
         } else {
             // If initiator, setup media and start the call immediately
@@ -74,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             await setupMediaOnly();
             updateCallStatus('Connecting...');
             await startCall();
-            signalingInterval = setInterval(checkForSignals, 200);
+            signalingInterval = setInterval(checkForSignals, 500); // 500ms interval (slower for weak connections)
             checkForSignals();
         }
     } catch (error) {
@@ -139,9 +153,20 @@ async function setupMediaOnly() {
         // Try full video/audio first for video calls
         if (callType === 'video') {
             try {
+                // Optimized constraints for low bandwidth (3-4 Mbps)
                 const constraints = {
-                    audio: true,
-                    video: { width: 1280, height: 720 }
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                        sampleRate: 48000, // High quality sample rate
+                        channelCount: 1 // Mono for lower bandwidth
+                    },
+                    video: { 
+                        width: { ideal: 640, max: 1280 }, // Lower resolution for weak connections
+                        height: { ideal: 480, max: 720 },
+                        frameRate: { ideal: 24, max: 30 } // Lower framerate saves bandwidth
+                    }
                 };
                 
                 localStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -157,7 +182,16 @@ async function setupMediaOnly() {
                     updateCallStatus('Camera unavailable - Audio only');
                     
                     try {
-                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                        localStream = await navigator.mediaDevices.getUserMedia({ 
+                            audio: {
+                                echoCancellation: true,
+                                noiseSuppression: true,
+                                autoGainControl: true,
+                                sampleRate: 48000,
+                                channelCount: 1 // Mono
+                            }, 
+                            video: false 
+                        });
                         audioOnlyMode = true;
                         hasMediaPermissions = true;
                         logEvent('media_granted', { type: 'audio_only', reason: videoError.name });
@@ -178,8 +212,17 @@ async function setupMediaOnly() {
                 }
             }
         } else {
-            // Audio-only call
-            const constraints = { audio: true, video: false };
+            // Audio-only call - optimized for low bandwidth
+            const constraints = { 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 48000,
+                    channelCount: 1 // Mono for lower bandwidth
+                }, 
+                video: false 
+            };
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
             logEvent('media_granted', { type: 'audio_only' });
             hasMediaPermissions = true;
@@ -286,9 +329,29 @@ async function startCall() {
 function createPeerConnection() {
     peerConnection = new RTCPeerConnection(config);
 
-    // Add local tracks to peer connection
+    // Add local tracks to peer connection with bandwidth constraints for low bandwidth
     localStream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, localStream);
+        const sender = peerConnection.addTrack(track, localStream);
+        
+        // Apply bandwidth constraints for weak connections (3-4 Mbps)
+        if (track.kind === 'video') {
+            const parameters = sender.getParameters();
+            if (!parameters.encodings) {
+                parameters.encodings = [{}];
+            }
+            // Limit video bitrate for weak connections
+            parameters.encodings[0].maxBitrate = 500000; // 500 kbps max for video
+            parameters.encodings[0].maxFramerate = 24; // Lower framerate
+            sender.setParameters(parameters).catch(e => console.error('Failed to set video parameters:', e));
+        } else if (track.kind === 'audio') {
+            const parameters = sender.getParameters();
+            if (!parameters.encodings) {
+                parameters.encodings = [{}];
+            }
+            // Optimize audio bitrate for clarity on weak connections
+            parameters.encodings[0].maxBitrate = 64000; // 64 kbps for audio (high quality speech)
+            sender.setParameters(parameters).catch(e => console.error('Failed to set audio parameters:', e));
+        }
     });
 
     // Handle incoming tracks
@@ -344,10 +407,16 @@ function createPeerConnection() {
         }
 
         if (peerConnection.connectionState === 'disconnected') {
-            console.warn('Connection disconnected, attempting to reconnect...');
-            updateCallStatus('Connection lost, reconnecting...');
-            showNotification('Connection lost, trying to reconnect...', 'warning');
-            attemptReconnection();
+            console.warn('Connection disconnected, waiting before reconnect...');
+            updateCallStatus('Connection unstable...');
+            // Wait 3 seconds before attempting reconnection (give time for network recovery)
+            setTimeout(() => {
+                if (peerConnection && peerConnection.connectionState === 'disconnected') {
+                    console.log('Still disconnected after 3s, attempting reconnect');
+                    showNotification('Connection lost, trying to reconnect...', 'warning');
+                    attemptReconnection();
+                }
+            }, 3000);
         }
         
         if (peerConnection.connectionState === 'failed') {
@@ -364,14 +433,14 @@ function createPeerConnection() {
         }
     };
     
-    // Set connection timeout (30 seconds)
+    // Set connection timeout (60 seconds for weak connections)
     connectionTimeout = setTimeout(() => {
         if (!isCallConnected && peerConnection && peerConnection.connectionState !== 'connected') {
-            console.error('Connection timeout');
-            showNotification('Connection timeout. Please check your internet connection.', 'error');
+            console.error('Connection timeout after 60 seconds');
+            showNotification('Unable to connect. Please check your internet connection and try again.', 'error');
             endCall();
         }
-    }, 30000);
+    }, 60000); // Increased from 30s to 60s
 }
 
 /**
@@ -400,6 +469,10 @@ async function createOffer() {
     try {
         logEvent('creating_offer');
         const offer = await peerConnection.createOffer();
+        
+        // Optimize SDP for low bandwidth
+        offer.sdp = optimizeSDP(offer.sdp);
+        
         await peerConnection.setLocalDescription(offer);
         await sendSignal('offer', offer);
         logEvent('offer_sent');
@@ -409,11 +482,36 @@ async function createOffer() {
 }
 
 /**
+ * Optimize SDP for low bandwidth connections
+ */
+function optimizeSDP(sdp) {
+    // Prefer Opus codec for audio (best for low bandwidth)
+    // Set Opus to use lower bitrate and enable FEC (Forward Error Correction) for packet loss
+    let optimizedSDP = sdp;
+    
+    // Set audio bitrate constraints
+    optimizedSDP = optimizedSDP.replace(/a=fmtp:(\d+).*opus.*/gi, 
+        'a=fmtp:$1 minptime=10;useinbandfec=1;maxaveragebitrate=64000');
+    
+    // Set video bitrate if present
+    if (optimizedSDP.includes('m=video')) {
+        optimizedSDP = optimizedSDP.replace(/(m=video \d+ .*\r\n)/g, 
+            '$1b=AS:500\r\n'); // 500 kbps for video
+    }
+    
+    return optimizedSDP;
+}
+
+/**
  * Handle incoming offer (receiver only)
  */
 async function handleOffer(offer) {
     try {
         console.log('Handling offer...');
+        
+        // Optimize incoming offer SDP
+        offer.sdp = optimizeSDP(offer.sdp);
+        
         await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
 
         // Add any queued ICE candidates now that we have remote description
@@ -427,8 +525,12 @@ async function handleOffer(offer) {
         }
         pendingIceCandidates = [];
 
-        // Create answer
+        // Create answer with optimizations
         const answer = await peerConnection.createAnswer();
+        
+        // Optimize answer SDP for low bandwidth
+        answer.sdp = optimizeSDP(answer.sdp);
+        
         await peerConnection.setLocalDescription(answer);
 
         // Send answer back
@@ -484,7 +586,7 @@ async function handleIceCandidate(candidate) {
 async function sendSignal(signalType, signalData) {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout (increased from 10s)
         
         const response = await fetch('api/send_signal.php', {
             method: 'POST',
@@ -550,7 +652,7 @@ let callStarted = false;
 async function checkForSignals() {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout (increased from 5s for weak connections)
         
         const response = await fetch('api/get_signals.php', {
             signal: controller.signal
