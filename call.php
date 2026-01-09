@@ -50,8 +50,8 @@ $update_stmt->execute();
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title><?php echo $call_type == 'video' ? 'Video' : 'Voice'; ?> Call - Wartalaap</title>
-    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
-    <script src="js/cache-buster.js?v=<?php echo time(); ?>"></script>
+    <link rel="stylesheet" href="css/style.css?v=1.0">
+    <script src="js/cache-buster.js?v=1.0"></script>
 </head>
 <body class="call-body">
     <div class="call-container">
@@ -162,6 +162,6 @@ $update_stmt->execute();
             }
         })();
     </script>
-    <script src="js/webrtc.js?v=<?php echo time(); ?>"></script>
+    <script src="js/webrtc.js?v=1.0"></script>
 </body>
 </html>

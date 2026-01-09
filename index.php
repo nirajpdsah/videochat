@@ -23,7 +23,7 @@ if (isLoggedIn()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wartalaap - Where Conversations Come Alive</title>
     <link rel="icon" type="image/png" href="uploads/logo.png">
-    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="css/style.css?v=1.0">
     <style>
         body {
             /* Background handled by global style.css */

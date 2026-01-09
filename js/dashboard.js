@@ -12,11 +12,11 @@ document.addEventListener('DOMContentLoaded', function () {
     loadUsers();
     updateUserStatus('online');
 
-    // Poll for users every 2 seconds (faster updates)
-    pollInterval = setInterval(loadUsers, 2000);
+    // Poll for users every 5 seconds (reduced from 2s to save hits)
+    pollInterval = setInterval(loadUsers, 5000);
 
-    // Poll for incoming calls every 1 second (faster notification)
-    setInterval(checkForIncomingCalls, 1000);
+    // Poll for incoming calls every 3 seconds (reduced from 1s to save hits)
+    setInterval(checkForIncomingCalls, 3000);
 
     // Send heartbeat every 10 seconds to keep user marked as online
     heartbeatInterval = setInterval(() => {

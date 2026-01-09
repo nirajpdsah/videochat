@@ -24,8 +24,8 @@ $current_user = getCurrentUser();
     <meta http-equiv="Expires" content="0">
     <title>Dashboard - Wartalaap</title>
     <link rel="icon" type="image/png" href="uploads/logo.png">
-    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
-    <script src="js/cache-buster.js?v=<?php echo time(); ?>"></script>
+    <link rel="stylesheet" href="css/style.css?v=1.0">
+    <script src="js/cache-buster.js?v=1.0"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -131,6 +131,6 @@ $current_user = getCurrentUser();
         let selectedUserId = null;
         let selectedUsername = null;
     </script>
-    <script src="js/dashboard.js?v=<?php echo time(); ?>"></script>
+    <script src="js/dashboard.js?v=1.0"></script>
 </body>
 </html>

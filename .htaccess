@@ -40,14 +40,19 @@ Options -Indexes
 # Cache static assets on the edge
 <IfModule mod_expires.c>
     ExpiresActive On
-    # Don't cache JS and CSS during development to prevent caching issues
-    ExpiresByType text/css "access plus 0 seconds"
-    ExpiresByType application/javascript "access plus 0 seconds"
+    # Cache CSS and JS for 7 days (now safe with version numbers)
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType text/javascript "access plus 7 days"
+    # Cache images for 7 days
     ExpiresByType image/png "access plus 7 days"
     ExpiresByType image/jpeg "access plus 7 days"
     ExpiresByType image/gif "access plus 7 days"
     ExpiresByType image/svg+xml "access plus 7 days"
     ExpiresByType image/webp "access plus 7 days"
+    # Cache audio files for 7 days
+    ExpiresByType audio/mpeg "access plus 7 days"
+    ExpiresByType audio/mp3 "access plus 7 days"
     ExpiresByType image/x-icon "access plus 7 days"
     ExpiresByType font/woff "access plus 7 days"
     ExpiresByType font/woff2 "access plus 7 days"
